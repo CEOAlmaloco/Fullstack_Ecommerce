@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@FeignClient(name = "msvc-notificaciones", url = "localhost:8006")
+@FeignClient(name = "msvc-notificaciones", url = "localhost:8086")
 public interface NotificacionClientRest {
 
     @PostMapping("/api/v1/notificaciones/email")

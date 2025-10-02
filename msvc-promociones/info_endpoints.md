@@ -1,14 +1,28 @@
-POST: /usuarios -> registrar usuarios con validaciones de edad +18 despues de la autenticacion
+POST: /promociones -> crear nueva promoción con validaciones de negocio
 
-POST: /usuarios/login ->autenticacion con JWT
+GET: /promociones -> obtener todas las promociones
 
-GET: /usuarios/{id} -> obtener info del perfil
+GET: /promociones/activas -> obtener promociones activas actualmente
 
-PUT: /usuarios/{id} -> actualizar datos personales
+GET: /promociones/duoc -> obtener promociones aplicables para usuarios Duoc (20% descuento)
 
-GET /usuarios/{id}/referidos -> listar los referidos
+GET: /promociones/categoria/{categoria} -> obtener promociones por categoría de producto
 
-se comunica con
-autenticacion -> para validar el login
-referidos -> para asociar el otro usuario a este y generar los puntos
-pedido -> para asociar la compra al usuario 
+GET: /promociones/{id} -> obtener promoción específica por ID
+
+GET: /promociones/codigo/{codigo} -> obtener promoción por código
+
+POST: /promociones/validar -> validar si una promoción es aplicable
+
+POST: /promociones/aplicar -> aplicar promoción a un pedido
+
+PUT: /promociones/{id} -> actualizar datos de promoción
+
+PUT: /promociones/{id}/estado -> activar/desactivar promoción
+
+DELETE: /promociones/{id} -> eliminar promoción
+
+se comunica con:
+usuario -> para validar si el usuario es de Duoc y aplicar descuentos especiales
+carrito -> para aplicar descuentos al carrito de compras
+pedido -> para aplicar promociones en el proceso de checkout

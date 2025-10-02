@@ -1,14 +1,34 @@
-POST: /usuarios -> registrar usuarios con validaciones de edad +18 despues de la autenticacion
+POST: /eventos -> crear nuevo evento gaming con validaciones de fechas y cupos
 
-POST: /usuarios/login ->autenticacion con JWT
+GET: /eventos -> obtener todos los eventos
 
-GET: /usuarios/{id} -> obtener info del perfil
+GET: /eventos/futuros -> obtener eventos futuros
 
-PUT: /usuarios/{id} -> actualizar datos personales
+GET: /eventos/en-curso -> obtener eventos en curso actualmente
 
-GET /usuarios/{id}/referidos -> listar los referidos
+GET: /eventos/tipo/{tipo} -> obtener eventos por tipo (TORNEO, LANZAMIENTO, MEETUP, WORKSHOP)
 
-se comunica con
-autenticacion -> para validar el login
-referidos -> para asociar el otro usuario a este y generar los puntos
-pedido -> para asociar la compra al usuario 
+GET: /eventos/con-cupos -> obtener eventos con cupos disponibles
+
+GET: /eventos/mapa -> obtener eventos con coordenadas para mapa interactivo
+
+GET: /eventos/{id} -> obtener evento específico por ID
+
+GET: /eventos/nombre/{nombre} -> obtener evento por nombre
+
+GET: /eventos/{id}/disponibilidad -> validar disponibilidad de cupos
+
+POST: /eventos/{id}/participar -> registrar participación de usuario en evento
+
+DELETE: /eventos/{id}/cancelar-participacion -> cancelar participación de usuario
+
+PUT: /eventos/{id} -> actualizar datos de evento
+
+PUT: /eventos/{id}/estado -> activar/desactivar evento
+
+DELETE: /eventos/{id} -> eliminar evento
+
+se comunica con:
+usuario -> para validar edad y registrar participaciones
+referidos -> para generar puntos LevelUp por participación en eventos
+notificaciones -> para enviar recordatorios de eventos próximos
