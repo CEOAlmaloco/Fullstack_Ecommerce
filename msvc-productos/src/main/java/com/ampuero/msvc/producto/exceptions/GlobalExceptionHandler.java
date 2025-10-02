@@ -2,26 +2,26 @@ package com.ampuero.msvc.producto.exceptions;
 
 /**
  * GlobalExceptionHandler.java
- *
+ * <p>
  * Descripción:
  * Manejador global de excepciones para el microservicio de productos. Centraliza
  * el manejo de todas las excepciones que pueden ocurrir en la aplicación y
  * proporciona respuestas HTTP estructuradas y consistentes.
- *
+ * <p>
  * Funcionalidades:
  * - Manejo centralizado de excepciones específicas del dominio.
  * - Transformación de excepciones en respuestas HTTP apropiadas.
  * - Formateo consistente de mensajes de error.
  * - Logging automático de errores para monitoreo.
  * - Manejo de errores de validación con detalles específicos.
- *
+ * <p>
  * Excepciones manejadas:
  * - ProductoException: Errores específicos del dominio de productos.
  * - ResourceNotFoundException: Recursos no encontrados.
  * - MethodArgumentNotValidException: Errores de validación de datos.
  * - FeignException: Errores de comunicación con microservicios.
  * - Exception: Errores no específicos (fallback).
- *
+ * <p>
  * Autor: Alex Ignacio Ampuero Ahumada
  * Fecha de creación: [NN]
  * Última modificación: [25-06-25]

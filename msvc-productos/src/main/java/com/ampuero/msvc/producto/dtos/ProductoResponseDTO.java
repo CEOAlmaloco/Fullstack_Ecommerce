@@ -2,18 +2,18 @@ package com.ampuero.msvc.producto.dtos;
 
 /**
  * ProductoResponseDTO.java
- *
+ * <p>
  * Descripción:
  * Objeto de transferencia de datos (DTO) utilizado para las respuestas detalladas de productos.
  * Este DTO incluye toda la información del producto más metadatos adicionales como fechas
  * de creación y modificación. Diseñado para ser usado con HATEOAS.
- *
+ * <p>
  * Uso común:
  * - Respuestas GET detalladas de productos.
  * - Respuestas POST/PUT tras crear o actualizar productos.
  * - Integración con sistemas externos que necesitan información completa.
  * - Soporte para navegación HATEOAS.
- *
+ * <p>
  * Atributos:
  * - idProducto: Identificador único del producto.
  * - nombreProducto: Nombre descriptivo del producto.
@@ -22,7 +22,7 @@ package com.ampuero.msvc.producto.dtos;
  * - fechaCreacion: Timestamp de cuando fue creado el producto (opcional).
  * - fechaModificacion: Timestamp de la última modificación (opcional).
  * - activo: Indica si el producto está disponible para venta.
- *
+ * <p>
  * Autor: Alex Ignacio Ampuero Ahumada
  * Fecha de creación: [25-06-25]
  * Última modificación: [25-06-25]

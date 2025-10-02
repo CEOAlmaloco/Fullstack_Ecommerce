@@ -5,16 +5,22 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/msvc-gateway/pom.xml" />
+        <option value="$PROJECT_DIR$/msvc-auth/pom.xml" />
+        <option value="$PROJECT_DIR$/msvc-usuario/pom.xml" />
+        <option value="$PROJECT_DIR$/msvc-productos/pom.xml" />
+        <option value="$PROJECT_DIR$/msvc-inventario/pom.xml" />
+        <option value="$PROJECT_DIR$/msvc-referidos/pom.xml" />
+        <option value="$PROJECT_DIR$/msvc-notificaciones/pom.xml" />
+        <option value="$PROJECT_DIR$/msvc-promociones/pom.xml" />
+        <option value="$PROJECT_DIR$/msvc-carrito/pom.xml" />
+        <option value="$PROJECT_DIR$/msvc-pedido/pom.xml" />
+        <option value="$PROJECT_DIR$/msvc-pagos/pom.xml" />
       </list>
     </option>
-    <option name="ignoredFiles">
-      <set>
-        <option value="$PROJECT_DIR$/msvc-detalleBoleta/pom.xml" />
-        <option value="$PROJECT_DIR$/msvc-inventario/pom.xml" />
-      </set>
-    </option>
+    <option name="workspaceImportForciblyTurnedOn" value="true" />
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="graalvm-jdk-21" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="17" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
 </project>

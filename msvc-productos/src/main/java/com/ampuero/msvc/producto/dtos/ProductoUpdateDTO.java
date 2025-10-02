@@ -2,25 +2,25 @@ package com.ampuero.msvc.producto.dtos;
 
 /**
  * ProductoUpdateDTO.java
- *
+ * <p>
  * Descripción:
  * Objeto de transferencia de datos (DTO) utilizado para la actualización de productos existentes.
  * Este DTO permite actualizaciones parciales, donde todos los campos son opcionales.
  * Si un campo no se proporciona (null), no se modificará en la entidad existente.
- *
+ * <p>
  * Uso común:
  * - Solicitudes PUT/PATCH para actualizar productos existentes.
  * - Actualizaciones parciales donde solo se modifican campos específicos.
  * - Validación de datos de entrada en actualizaciones.
  * - Separación clara entre datos de actualización y la entidad de dominio.
- *
+ * <p>
  * Atributos:
  * - nombreProducto: Nuevo nombre del producto (opcional).
  * - descripcionProducto: Nueva descripción del producto (opcional).
  * - precioProducto: Nuevo precio del producto (opcional, debe ser positivo si se proporciona).
  * - activo: Nuevo estado de activación del producto (opcional).
  * - stock: Nueva cantidad en inventario (opcional).
- *
+ * <p>
  * Autor: Alex Ignacio Ampuero Ahumada
  * Fecha de creación: [25-06-25]
  * Última modificación: [25-06-25]

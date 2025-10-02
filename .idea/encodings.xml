@@ -1,13 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
-    <file url="file://$PROJECT_DIR$/msvc-boleta/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/msvc-cliente/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/msvc-detalle/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/msvc-detalleBoleta/src/main/java" charset="UTF-8" />
+    <file url="file://$APPLICATION_HOME_DIR$/bin/src/main/java" charset="UTF-8" />
+    <file url="file://$APPLICATION_HOME_DIR$/bin/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/msvc-auth/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/msvc-carrito/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/msvc-contenido/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/msvc-eventos/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/msvc-gateway/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/msvc-inventario/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/msvc-notificaciones/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/msvc-pagos/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/msvc-pedido/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/msvc-productos/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/msvc-productos/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/msvc-promociones/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/msvc-referidos/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/msvc-referidos/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/msvc-resenia/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/msvc-usuario/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="PROJECT" charset="UTF-8" />
   </component>
 </project>

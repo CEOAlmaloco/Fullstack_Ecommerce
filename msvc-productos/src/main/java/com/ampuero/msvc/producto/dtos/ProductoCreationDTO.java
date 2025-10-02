@@ -2,22 +2,22 @@ package com.ampuero.msvc.producto.dtos;
 
 /**
  * ProductoCreationDTO.java
- *
+ * <p>
  * Descripción:
  * Objeto de transferencia de datos (DTO) utilizado para la creación de nuevos productos.
  * Este DTO contiene únicamente los campos necesarios para crear un producto, excluyendo
  * el ID que es generado automáticamente por la base de datos.
- *
+ * <p>
  * Uso común:
  * - Solicitudes POST para crear nuevos productos.
  * - Validación de datos de entrada en la creación de productos.
  * - Separación clara entre datos de entrada y la entidad de dominio.
- *
+ * <p>
  * Atributos:
  * - nombreProducto: Nombre descriptivo del producto (requerido).
  * - descripcionProducto: Descripción detallada del producto.
  * - precioProducto: Precio del producto en la moneda base del sistema (requerido, debe ser positivo).
- *
+ * <p>
  * Autor: Alex Ignacio Ampuero Ahumada
  * Fecha de creación: [25-06-25]
  * Última modificación: [25-06-25]

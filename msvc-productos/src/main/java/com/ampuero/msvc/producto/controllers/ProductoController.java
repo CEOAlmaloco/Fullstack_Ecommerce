@@ -10,9 +10,9 @@ import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 /**
@@ -30,10 +31,11 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/api/v1/productos")
+@RequestMapping("/productos")
 @Validated
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
 @Tag(name = "Producto API",
-description = "Aqui se generan todos los metodos crud para producto")
+        description = "Aqui se generan todos los metodos crud para producto")
 public class ProductoController {
 
     @Autowired
@@ -64,9 +66,9 @@ public class ProductoController {
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",
-            description = "obtencion por id correcta"),
+                    description = "obtencion por id correcta"),
             @ApiResponse(responseCode = "404",
-            description = "error el producto con esa id no existe")
+                    description = "error el producto con esa id no existe")
 
     })
     @Parameters(value = {
@@ -83,16 +85,17 @@ public class ProductoController {
                     )
             )
     })
-    public ResponseEntity<Producto> traerPorId(@PathVariable Long id){
+    public ResponseEntity<Producto> traerPorId(@PathVariable Long id) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(this.productoService.traerPorId(id));
     }
+
     // POST: Crear nuevo producto
     @PostMapping
     @Operation(
             summary = "endpoint guardado de un medico",
-            description = "endpoint que permite capturar un elemento producto.class y lo guarda"+
+            description = "endpoint que permite capturar un elemento producto.class y lo guarda" +
                     "dentro de la base de datos"
     )
     @ApiResponses(value = {
@@ -129,11 +132,12 @@ public class ProductoController {
                     schema = @Schema(implementation = Producto.class)
             )
     )
-    public ResponseEntity<Producto> crearProducto(@RequestBody @Valid Producto producto){
+    public ResponseEntity<Producto> crearProducto(@RequestBody @Valid Producto producto) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(this.productoService.crearProducto(producto));
     }
+
     // PUT: Actualizar producto por ID
     @PutMapping("/{id}")
     @Operation(
@@ -147,6 +151,7 @@ public class ProductoController {
     public ResponseEntity<Producto> actualizarProducto(@PathVariable Long id, @RequestBody Producto producto) {
         return ResponseEntity.status(HttpStatus.OK).body(productoService.actualizarProducto(id, producto));
     }
+
     // DELETE: Eliminar producto por ID
     @DeleteMapping("/{id}")
     @Operation(
@@ -158,8 +163,40 @@ public class ProductoController {
             @ApiResponse(responseCode = "404", description = "Producto no encontrado")
     })
     public ResponseEntity<Void> eliminarProducto(@PathVariable Long id) {
-       productoService.eliminarProducto(id);
+        productoService.eliminarProducto(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // GET: Obtener categorías
+    @GetMapping("/categorias")
+    @Operation(
+            summary = "Obtener categorías y subcategorías",
+            description = "Devuelve la lista de categorías y subcategorías disponibles"
+    )
+    @ApiResponse(responseCode = "200", description = "Categorías obtenidas correctamente")
+    public ResponseEntity<?> obtenerCategorias() {
+        return ResponseEntity.ok(productoService.obtenerCategorias());
+    }
+
+    // GET: Buscar productos
+    @GetMapping("/buscar")
+    @Operation(summary = "Buscar productos por nombre", description = "Busca productos que coincidan con el término")
+    public ResponseEntity<List<Producto>> buscarProductos(@RequestParam String nombre) {
+        return ResponseEntity.ok(productoService.buscarPorNombre(nombre));
+    }
+
+    // GET: Filtrar por categoría
+    @GetMapping("/categoria/{categoria}")
+    @Operation(summary = "Productos por categoría", description = "Obtiene productos de una categoría específica")
+    public ResponseEntity<List<Producto>> productosPorCategoria(@PathVariable String categoria) {
+        return ResponseEntity.ok(productoService.obtenerPorCategoria(categoria));
+    }
+
+    // GET: Productos disponibles
+    @GetMapping("/disponibles")
+    @Operation(summary = "Productos disponibles", description = "Solo productos con stock y disponibles")
+    public ResponseEntity<List<Producto>> productosDisponibles() {
+        return ResponseEntity.ok(productoService.obtenerDisponibles());
     }
 
 }

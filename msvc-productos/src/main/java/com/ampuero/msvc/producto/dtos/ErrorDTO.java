@@ -2,18 +2,18 @@ package com.ampuero.msvc.producto.dtos;
 
 /**
  * ErrorDTO.java
- *
+ * <p>
  * Descripción:
  * Objeto de transferencia de datos (DTO) utilizado para representar errores en las respuestas
  * de la API del microservicio de productos. Proporciona información detallada sobre errores
  * que ocurren durante el procesamiento de solicitudes.
- *
+ * <p>
  * Uso común:
  * - Respuestas de error HTTP (4xx, 5xx).
  * - Manejo centralizado de excepciones en GlobalExceptionHandler.
  * - Comunicación de errores de validación a clientes de la API.
  * - Logging y monitoreo de errores del sistema.
- *
+ * <p>
  * Atributos:
  * - status: Código de estado HTTP del error.
  * - message: Mensaje principal del error.
@@ -21,7 +21,7 @@ package com.ampuero.msvc.producto.dtos;
  * - timestamp: Fecha y hora cuando ocurrió el error.
  * - path: Ruta del endpoint donde ocurrió el error.
  * - errors: Mapa de errores específicos (útil para errores de validación).
- *
+ * <p>
  * Autor: Alex Ignacio Ampuero Ahumada
  * Fecha de creación: [NN]
  * Última modificación: [25-06-25]
