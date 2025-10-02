@@ -1,6 +1,8 @@
 package com.ampuero.msvc.usuario.repositories;
 
 import com.ampuero.msvc.usuario.entities.Usuario;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -39,6 +41,14 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     List<Usuario> findByTipoUsuario(Usuario.TipoUsuario tipoUsuario);
 
     /**
+     * Busca usuarios por tipo con paginación
+     * @param tipoUsuario Tipo de usuario
+     * @param pageable Información de paginación
+     * @return Página de usuarios del tipo especificado
+     */
+    Page<Usuario> findByTipoUsuario(Usuario.TipoUsuario tipoUsuario, Pageable pageable);
+
+    /**
      * Busca usuarios por estado
      * @param estado Estado del usuario
      * @return Lista de usuarios con el estado especificado
@@ -46,11 +56,27 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     List<Usuario> findByEstado(Usuario.EstadoUsuario estado);
 
     /**
+     * Busca usuarios por estado con paginación
+     * @param estado Estado del usuario
+     * @param pageable Información de paginación
+     * @return Página de usuarios con el estado especificado
+     */
+    Page<Usuario> findByEstado(Usuario.EstadoUsuario estado, Pageable pageable);
+
+    /**
      * Busca usuarios por nivel
      * @param nivelUsuario Nivel del usuario
      * @return Lista de usuarios con el nivel especificado
      */
     List<Usuario> findByNivelUsuario(Usuario.NivelUsuario nivelUsuario);
+
+    /**
+     * Busca usuarios por nivel con paginación
+     * @param nivelUsuario Nivel del usuario
+     * @param pageable Información de paginación
+     * @return Página de usuarios con el nivel especificado
+     */
+    Page<Usuario> findByNivelUsuario(Usuario.NivelUsuario nivelUsuario, Pageable pageable);
 
     /**
      * Busca usuarios por código de referido
@@ -65,6 +91,14 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
      * @return Lista de usuarios referidos
      */
     List<Usuario> findByReferidoPor(String referidoPor);
+
+    /**
+     * Busca usuarios que fueron referidos por otro usuario con paginación
+     * @param referidoPor Código del usuario que refirió
+     * @param pageable Información de paginación
+     * @return Página de usuarios referidos
+     */
+    Page<Usuario> findByReferidoPor(String referidoPor, Pageable pageable);
 
     /**
      * Busca usuarios activos
@@ -109,6 +143,14 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
      * @return Lista de usuarios de la ciudad especificada
      */
     List<Usuario> findByCiudad(String ciudad);
+
+    /**
+     * Busca usuarios por ciudad con paginación
+     * @param ciudad Ciudad del usuario
+     * @param pageable Información de paginación
+     * @return Página de usuarios de la ciudad especificada
+     */
+    Page<Usuario> findByCiudad(String ciudad, Pageable pageable);
 
     /**
      * Busca usuarios por país

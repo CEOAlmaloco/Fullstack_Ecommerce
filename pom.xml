@@ -10,7 +10,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.ampuero.perfulandia</groupId>
-    <artifactId>Backend_Java_Spring</artifactId>
+    <artifactId>Fullstack_Ecommerce</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>

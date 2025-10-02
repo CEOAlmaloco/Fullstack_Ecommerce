@@ -2,12 +2,13 @@ package com.ampuero.msvc.pedido.clients;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
 
-@FeignClient(name = "msvc-pagos", url = "localhost:8088")
+@FeignClient(name = "msvc-pagos", url = "localhost:8011")
 public interface PagoClientRest {
 
     @PostMapping("/pagos")

@@ -3,6 +3,7 @@ package com.ampuero.msvc.referidos.services;
 import com.ampuero.msvc.referidos.clients.*;
 import com.ampuero.msvc.referidos.entities.Referido;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -29,7 +30,9 @@ public class IntegracionServiceImpl implements IntegracionService {
 
     @Autowired
     private NotificacionClientRest notificacionClientRest;
+    
     @Autowired
+    @Lazy
     private ReferidoService referidoService; // Para acceder a los datos del referido
 
     @Override

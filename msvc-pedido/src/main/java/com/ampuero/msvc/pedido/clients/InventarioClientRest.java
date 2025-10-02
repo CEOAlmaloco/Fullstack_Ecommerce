@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
 
-@FeignClient(name = "msvc-inventario", url = "localhost:8084")
+@FeignClient(name = "msvc-inventario", url = "localhost:8004")
 public interface InventarioClientRest {
 
     @PostMapping("/inventario/reservar-stock")

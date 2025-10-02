@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
 
-@FeignClient(name = "msvc-carrito", url = "localhost:8087")
+@FeignClient(name = "msvc-carrito", url = "localhost:8008")
 public interface CarritoClientRest {
 
     @GetMapping("/carrito/{idUsuario}")

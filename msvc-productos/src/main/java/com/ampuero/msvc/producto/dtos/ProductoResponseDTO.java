@@ -31,6 +31,7 @@ package com.ampuero.msvc.producto.dtos;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.hateoas.RepresentationModel;
 
@@ -39,6 +40,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 @Schema(description = "DTO de respuesta completa para productos")
 public class ProductoResponseDTO extends RepresentationModel<ProductoResponseDTO> {
 

@@ -1,4 +1,4 @@
-package com.ampuero.msvc.clientes;
+package com.ampuero.msvc.carrito;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

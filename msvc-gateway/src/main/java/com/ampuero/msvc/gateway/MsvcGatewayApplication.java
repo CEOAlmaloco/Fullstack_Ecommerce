@@ -21,19 +21,19 @@ public class MsvcGatewayApplication {
         return builder.routes()
                 // Auth Service
                 .route("msvc-auth", r -> r.path("/auth/**")
-                        .uri("http://localhost:8081"))
+                        .uri("http://localhost:8001"))
 
                 // User Service
                 .route("msvc-usuario", r -> r.path("/usuarios/**")
-                        .uri("http://localhost:8082"))
+                        .uri("http://localhost:8095"))
 
                 // Product Service
                 .route("msvc-productos", r -> r.path("/productos/**")
-                        .uri("http://localhost:8083"))
+                        .uri("http://localhost:8003"))
 
                 // Cart Service
                 .route("msvc-carrito", r -> r.path("/carrito/**")
-                        .uri("http://localhost:8084"))
+                        .uri("http://localhost:8008"))
 
                 // Order Service
                 .route("msvc-pedido", r -> r.path("/pedidos/**")
@@ -41,35 +41,35 @@ public class MsvcGatewayApplication {
 
                 // Inventory Service
                 .route("msvc-inventario", r -> r.path("/inventario/**")
-                        .uri("http://localhost:8086"))
+                        .uri("http://localhost:8004"))
 
                 // Referral Service
                 .route("msvc-referidos", r -> r.path("/referidos/**")
-                        .uri("http://localhost:8087"))
+                        .uri("http://localhost:8005"))
 
                 // Review Service
                 .route("msvc-resenia", r -> r.path("/resenias/**")
-                        .uri("http://localhost:8088"))
+                        .uri("http://localhost:8010"))
 
                 // Payment Service
                 .route("msvc-pagos", r -> r.path("/pagos/**")
-                        .uri("http://localhost:8089"))
+                        .uri("http://localhost:8011"))
 
                 // Notification Service
                 .route("msvc-notificaciones", r -> r.path("/notificaciones/**")
-                        .uri("http://localhost:8090"))
+                        .uri("http://localhost:8006"))
 
                 // Event Service
                 .route("msvc-eventos", r -> r.path("/eventos/**")
-                        .uri("http://localhost:8091"))
+                        .uri("http://localhost:8092"))
 
                 // Content Service
                 .route("msvc-contenido", r -> r.path("/contenido/**")
-                        .uri("http://localhost:8092"))
+                        .uri("http://localhost:8093"))
 
                 // Promotion Service
                 .route("msvc-promociones", r -> r.path("/promociones/**")
-                        .uri("http://localhost:8093"))
+                        .uri("http://localhost:8091"))
 
                 .build();
     }
