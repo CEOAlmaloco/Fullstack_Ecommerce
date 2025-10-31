@@ -1,5 +1,7 @@
 package com.ampuero.msvc.producto.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -15,6 +17,7 @@ import java.time.LocalDateTime;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 @Schema(description = "Entidad que representa un producto")
 public class Producto {
     @Id
@@ -28,12 +31,48 @@ public class Producto {
     @Schema(description = "título del producto", examples = "PlayStation 5")
     private String titulo;
 
-    @Column(name = "categoria_id")
-    @Schema(description = "ID de la categoría", examples = "CO")
-    private String categoriaId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "categoria_id", nullable = false)
+    @Schema(description = "Categoría del producto")
+    @JsonIgnore
+    private Categoria categoria;
 
-    @Column(name = "subcategoria_id")
-    @Schema(description = "ID de la subcategoría", examples = "HA")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subcategoria_id", nullable = false)
+    @Schema(description = "Subcategoría del producto")
+    @JsonIgnore
+    private Subcategoria subcategoria;
+
+    // Campos de compatibilidad para acceso rápido a IDs (sin relaciones) - serializables
+    @JsonProperty("categoriaId")
+    public String getCategoriaId() {
+        if (categoria != null) {
+            return categoria.getId();
+        }
+        return categoriaId;
+    }
+    
+    public void setCategoriaId(String categoriaId) {
+        this.categoriaId = categoriaId;
+    }
+    
+    @JsonProperty("subcategoriaId")
+    public String getSubcategoriaId() {
+        if (subcategoria != null) {
+            return subcategoria.getId();
+        }
+        return subcategoriaId;
+    }
+    
+    public void setSubcategoriaId(String subcategoriaId) {
+        this.subcategoriaId = subcategoriaId;
+    }
+    
+    // Campos temporales para almacenar IDs (no serializados directamente, se acceden vía getters)
+    @Transient
+    private String categoriaId;
+    
+    @Transient
     private String subcategoriaId;
 
     @Column
@@ -66,6 +105,10 @@ public class Producto {
     @Schema(description = "stock disponible del producto", examples = "15")
     private Integer stock = 0;
 
+    @Column(name = "codigo_producto", unique = true)
+    @Schema(description = "Código único del producto", examples = "PROD-001")
+    private String codigoProducto;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -76,6 +119,21 @@ public class Producto {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+    }
+    
+    @PostLoad
+    protected void onLoad() {
+        // Generar código si no existe después de cargar desde BD
+        if ((codigoProducto == null || codigoProducto.isEmpty()) && id != null) {
+            codigoProducto = "PROD-" + String.format("%06d", id);
+        }
+        // Poblar IDs de compatibilidad desde relaciones
+        if (categoria != null) {
+            this.categoriaId = categoria.getId();
+        }
+        if (subcategoria != null) {
+            this.subcategoriaId = subcategoria.getId();
+        }
     }
 
     @PreUpdate

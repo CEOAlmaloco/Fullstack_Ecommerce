@@ -24,4 +24,6 @@ public interface ProductoService {
     List<Producto> obtenerPorCategoria(String categoria);
 
     List<Producto> obtenerDisponibles();
+
+    com.ampuero.msvc.producto.dtos.ProductoPaginadoResponseDTO filtrarProductos(com.ampuero.msvc.producto.dtos.ProductoFiltroDTO filtros);
 }

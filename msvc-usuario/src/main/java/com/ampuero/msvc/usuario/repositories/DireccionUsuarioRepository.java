@@ -57,6 +57,11 @@ public interface DireccionUsuarioRepository extends JpaRepository<DireccionUsuar
     List<DireccionUsuario> findByCiudad(String ciudad);
 
     /**
+     * Busca todas las direcciones por id de usuario (conveniencia para servicios)
+     */
+    List<DireccionUsuario> findByUsuario_IdUsuario(Long idUsuario);
+
+    /**
      * Busca direcciones por país
      * @param pais País de las direcciones
      * @return Lista de direcciones en el país especificado

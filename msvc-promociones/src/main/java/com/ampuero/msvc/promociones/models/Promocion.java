@@ -62,4 +62,18 @@ public class Promocion {
 
     @Column(name = "categoria_aplicable")
     private String categoriaAplicable;
+
+    @Column(name = "puntos_requeridos")
+    private Integer puntosRequeridos; // Para promociones canjeables con puntos
+
+    @Column(name = "tipo_promocion")
+    private String tipoPromocion; // DESCUENTO, OFERTA, CANJE_PUNTOS
+
+    @PrePersist
+    protected void onCreate() {
+        if (activo == null) activo = true;
+        if (tipoPromocion == null) tipoPromocion = "DESCUENTO";
+        if (puntosRequeridos == null) puntosRequeridos = 0;
+        if (usosActuales == null) usosActuales = 0;
+    }
 }

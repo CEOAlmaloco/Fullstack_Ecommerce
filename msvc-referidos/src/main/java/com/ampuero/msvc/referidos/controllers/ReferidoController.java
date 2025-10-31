@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("api/v1/referidos")
+@RequestMapping("/referidos")
 @Validated
 @Tag(
         name = "Referidos API",
@@ -35,6 +35,9 @@ public class ReferidoController {
 
     @Autowired
     private ReferidoService referidoService;
+
+    @Autowired
+    private com.ampuero.msvc.referidos.services.PuntosService puntosService;
 
     @PostMapping
     @Operation(
@@ -117,6 +120,51 @@ public class ReferidoController {
                 .body(referidoService.traerPorId(id));
     }
 
+    @GetMapping("/codigo")
+    @Operation(
+            summary = "Obtener código de referido del usuario actual",
+            description = "Endpoint que devuelve el código de referido del usuario autenticado"
+    )
+    public ResponseEntity<Map<String, String>> obtenerMiCodigo(@RequestParam(required = false) Long idUsuario) {
+        if (idUsuario == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        // Usar el nuevo sistema de puntos
+        String codigo = puntosService.obtenerCodigoReferido(idUsuario);
+        return ResponseEntity.ok(Map.of("codigoReferido", codigo));
+    }
+
+    @PostMapping("/registrar")
+    @Operation(
+            summary = "Registrar referido",
+            description = "Endpoint para registrar que un usuario fue referido usando un código"
+    )
+    public ResponseEntity<Map<String, String>> registrarReferido(@RequestParam String codigo, 
+                                                               @RequestParam Long idUsuarioReferido) {
+        // Validar código
+        try {
+            Referido referidor = referidoService.buscarPorCodigoReferido(codigo);
+            if (referidor == null || !referidor.getActivo()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Código de referido inválido"));
+            }
+            
+            // Otorgar puntos al referidor
+            com.ampuero.msvc.referidos.dtos.EventoPuntosCreationDTO eventoDTO = 
+                    new com.ampuero.msvc.referidos.dtos.EventoPuntosCreationDTO();
+            eventoDTO.setTipoEvento("REFERIDO");
+            eventoDTO.setNombreEvento("Usuario referido");
+            eventoDTO.setDescripcionEvento("Puntos por referir a un nuevo usuario");
+            eventoDTO.setPuntosOtorgados(50);
+            eventoDTO.setIdUsuario(referidor.getIdReferido());
+            
+            puntosService.otorgarPuntosPorEvento(referidor.getIdReferido(), eventoDTO);
+            
+            return ResponseEntity.ok(Map.of("mensaje", "Referido registrado exitosamente"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Error al registrar referido: " + e.getMessage()));
+        }
+    }
+
     @GetMapping("/codigo/{codigo}")
     @Operation(
             summary = "Validar código de referido",
@@ -140,6 +188,19 @@ public class ReferidoController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(referidoService.buscarPorCodigoReferido(codigo));
+    }
+
+    @GetMapping("/lista")
+    @Operation(
+            summary = "Obtener lista de referidos del usuario",
+            description = "Endpoint que devuelve la lista de usuarios referidos por el usuario actual"
+    )
+    public ResponseEntity<List<Referido>> obtenerListaReferidos(@RequestParam(required = false) Long idUsuario) {
+        if (idUsuario == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        List<Referido> referidos = referidoService.buscarReferidosPorReferidor(idUsuario);
+        return ResponseEntity.ok(referidos);
     }
 
     @GetMapping("/usuario/{usuarioId}/referidos")
@@ -338,6 +399,31 @@ public class ReferidoController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(referidoService.obtenerProductosCanjeables(puntos));
+    }
+
+    @GetMapping("/recompensas")
+    @Operation(
+            summary = "Obtener estadísticas de recompensas",
+            description = "Endpoint que devuelve estadísticas de referidos y recompensas para un usuario"
+    )
+    public ResponseEntity<Map<String, Object>> obtenerRecompensas(@RequestParam(required = false) Long idUsuario) {
+        if (idUsuario == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        List<Referido> referidos = referidoService.buscarReferidosPorReferidor(idUsuario);
+        int totalReferidos = referidos.size();
+        int recompensasPendientes = (int) referidos.stream()
+                .filter(r -> r.getPuntosLevelup() == null || r.getPuntosLevelup() < 50)
+                .count();
+        Referido referidor = referidoService.traerPorId(idUsuario);
+        int puntosAcumulados = referidor != null ? referidor.getPuntosLevelup() : 0;
+        
+        Map<String, Object> stats = Map.of(
+                "totalReferidos", totalReferidos,
+                "recompensasPendientes", recompensasPendientes,
+                "puntosAcumulados", puntosAcumulados
+        );
+        return ResponseEntity.ok(stats);
     }
 
     @GetMapping("/{id}/descuentos")

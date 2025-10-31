@@ -191,6 +191,85 @@ public class PagoController {
     }
 
     /**
+     * Procesar pago desde checkout (con pedidoId y datos de pago)
+     * POST: /pagos/procesar
+     */
+    @PostMapping("/procesar")
+    public ResponseEntity<PagoResponseDTO> procesarPagoCheckout(@Valid @RequestBody PagoCreationDTO pagoDetails) {
+        Pago pago = pagoService.crearPago(pagoDetails);
+        Pago pagoProcesado = pagoService.procesarPago(pago.getIdPago());
+        PagoResponseDTO response = convertirPagoAResponseDTO(pagoProcesado);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Verificar estado de pago
+     * GET: /pagos/{id}/verificar
+     */
+    @GetMapping("/{id}/verificar")
+    public ResponseEntity<PagoResponseDTO> verificarPago(@PathVariable Long id) {
+        Pago pago = pagoService.traerPagoPorId(id);
+        PagoResponseDTO response = convertirPagoAResponseDTO(pago);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Iniciar pago desde carrito
+     * POST: /pagos/iniciar
+     */
+    @PostMapping("/iniciar")
+    public ResponseEntity<TransaccionResponseDTO> iniciarPago(@RequestBody java.util.Map<String, Object> request) {
+        Long idCarrito = null;
+        if (request.get("idCarrito") != null) {
+            idCarrito = Long.parseLong(request.get("idCarrito").toString());
+        }
+        
+        // Crear un pago temporal para la transacción (valores por defecto)
+        PagoCreationDTO pagoDTO = new PagoCreationDTO();
+        if (request.get("idPedido") != null) {
+            pagoDTO.setIdPedido(Long.parseLong(request.get("idPedido").toString()));
+        } else {
+            pagoDTO.setIdPedido(0L); // Temporal
+        }
+        if (request.get("idUsuario") != null) {
+            pagoDTO.setIdUsuario(Long.parseLong(request.get("idUsuario").toString()));
+        } else {
+            pagoDTO.setIdUsuario(0L); // Temporal
+        }
+        pagoDTO.setMetodoPago((String) request.getOrDefault("metodoPago", "TARJETA"));
+        Double monto = 0.0;
+        if (request.get("monto") != null) {
+            monto = Double.parseDouble(request.get("monto").toString());
+        }
+        pagoDTO.setMontoPago(monto);
+        
+        Pago pago = pagoService.crearPago(pagoDTO);
+        
+        // Crear transacción asociada al pago
+        TransaccionCreationDTO transaccionDTO = new TransaccionCreationDTO();
+        transaccionDTO.setIdPago(pago.getIdPago());
+        transaccionDTO.setTipoTransaccion("PAGO");
+        transaccionDTO.setMontoTransaccion(monto);
+        transaccionDTO.setProveedorPago("INTERNO");
+        Transaccion transaccion = pagoService.crearTransaccion(transaccionDTO);
+        TransaccionResponseDTO response = convertirTransaccionAResponseDTO(transaccion);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * Confirmar transacción
+     * POST: /pagos/transacciones/{id}/confirmar
+     */
+    @PostMapping("/transacciones/{id}/confirmar")
+    public ResponseEntity<TransaccionResponseDTO> confirmarTransaccion(
+            @PathVariable Long id,
+            @RequestParam String token) {
+        Transaccion transaccion = pagoService.completarTransaccion(id, "OK", "Transacción confirmada exitosamente");
+        TransaccionResponseDTO response = convertirTransaccionAResponseDTO(transaccion);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Aprobar pago
      * POST: /pagos/{id}/aprobar
      */

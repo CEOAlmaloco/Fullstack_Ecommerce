@@ -41,4 +41,6 @@ public class PromocionCreationDTO {
     private Integer usosPorUsuario = 1;
     private Boolean aplicableDuoc = false;
     private String categoriaAplicable;
+    private Integer puntosRequeridos = 0;
+    private String tipoPromocion = "DESCUENTO"; // DESCUENTO, OFERTA, CANJE_PUNTOS
 }

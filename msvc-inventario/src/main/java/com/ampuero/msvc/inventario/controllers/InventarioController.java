@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/inventario")
 @Validated
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "http://localhost:3000"})
 @Tag(name = "Inventario API", description = "Gestión de inventario y control de stock")
 public class InventarioController {
 
@@ -46,7 +46,11 @@ public class InventarioController {
     @GetMapping("/producto/{productoId}")
     @Operation(summary = "Obtener inventario por producto", description = "Devuelve el inventario de un producto específico")
     public ResponseEntity<Inventario> obtenerPorProductoId(@PathVariable Long productoId) {
-        return ResponseEntity.ok(inventarioService.traerPorProductoId(productoId));
+        try {
+            return ResponseEntity.ok(inventarioService.traerPorProductoId(productoId));
+        } catch (com.ampuero.msvc.inventario.exceptions.ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping

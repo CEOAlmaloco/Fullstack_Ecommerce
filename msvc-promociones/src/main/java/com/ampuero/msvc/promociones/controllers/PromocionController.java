@@ -12,11 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/promociones")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "http://localhost:3000"})
 public class PromocionController {
 
     @Autowired
@@ -109,12 +110,25 @@ public class PromocionController {
 
     /**
      * Validar promoción
+     * GET: /promociones/validar/{codigo}
+     */
+    @GetMapping("/validar/{codigo}")
+    public ResponseEntity<Boolean> validarPromocion(@PathVariable String codigo) {
+        boolean esValida = promocionService.validarPromocion(codigo, 0.0, "");
+        return ResponseEntity.ok(esValida);
+    }
+
+    /**
+     * Validar promoción con parámetros
      * POST: /promociones/validar
      */
     @PostMapping("/validar")
-    public ResponseEntity<Boolean> validarPromocion(@RequestParam String codigo, 
-                                                   @RequestParam Double montoTotal, 
-                                                   @RequestParam String correoUsuario) {
+    public ResponseEntity<Boolean> validarPromocionConParametros(@RequestBody Map<String, Object> request) {
+        String codigo = (String) request.get("codigo");
+        Double montoTotal = request.get("montoTotal") != null ? 
+                Double.parseDouble(request.get("montoTotal").toString()) : 0.0;
+        String correoUsuario = (String) request.getOrDefault("correoUsuario", "");
+        
         boolean esValida = promocionService.validarPromocion(codigo, montoTotal, correoUsuario);
         return ResponseEntity.ok(esValida);
     }
@@ -124,11 +138,37 @@ public class PromocionController {
      * POST: /promociones/aplicar
      */
     @PostMapping("/aplicar")
-    public ResponseEntity<PromocionResponseDTO> aplicarPromocion(@RequestParam String codigo, 
-                                                                @RequestParam Double montoTotal, 
-                                                                @RequestParam String correoUsuario) {
+    public ResponseEntity<PromocionResponseDTO> aplicarPromocion(@RequestBody Map<String, Object> request) {
+        String codigo = (String) request.get("codigo");
+        Double montoTotal = request.get("montoTotal") != null ? 
+                Double.parseDouble(request.get("montoTotal").toString()) : 0.0;
+        String correoUsuario = (String) request.getOrDefault("correoUsuario", "");
+        
+        // Validar antes de aplicar
+        if (!promocionService.validarPromocion(codigo, montoTotal, correoUsuario)) {
+            return ResponseEntity.badRequest().build();
+        }
+        
         Promocion promocion = promocionService.aplicarPromocion(codigo, montoTotal, correoUsuario);
         PromocionResponseDTO response = convertirAResponseDTO(promocion);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Obtener promociones de un usuario
+     * GET: /promociones/usuario
+     */
+    @GetMapping("/usuario")
+    public ResponseEntity<List<PromocionResponseDTO>> traerPromocionesUsuario(
+            @RequestParam(required = false) String correoUsuario) {
+        List<Promocion> promociones = promocionService.traerPromocionesActivas();
+        // Filtrar por Duoc si el usuario es Duoc
+        if (correoUsuario != null && correoUsuario.endsWith("@duoc.cl")) {
+            promociones = promocionService.traerPromocionesDuocActivas();
+        }
+        List<PromocionResponseDTO> response = promociones.stream()
+                .map(this::convertirAResponseDTO)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(response);
     }
 
@@ -187,6 +227,8 @@ public class PromocionController {
         response.setActivo(promocion.getActivo());
         response.setAplicableDuoc(promocion.getAplicableDuoc());
         response.setCategoriaAplicable(promocion.getCategoriaAplicable());
+        response.setPuntosRequeridos(promocion.getPuntosRequeridos());
+        response.setTipoPromocion(promocion.getTipoPromocion());
         return response;
     }
 }

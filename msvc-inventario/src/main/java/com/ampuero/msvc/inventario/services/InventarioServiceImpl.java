@@ -18,8 +18,12 @@ import java.util.Optional;
 public class InventarioServiceImpl implements InventarioService {
 
     private static final Logger log = LoggerFactory.getLogger(InventarioServiceImpl.class);
+    
     @Autowired
     private InventarioRepository inventarioRepository;
+    
+    @Autowired(required = false)
+    private com.ampuero.msvc.inventario.clients.ProductoClientRest productoClientRest;
 
     @Override
     public List<Inventario> traerTodos() {
@@ -45,6 +49,19 @@ public class InventarioServiceImpl implements InventarioService {
 
         if (existente.isPresent()) {
             throw new InventarioException("Ya existe inventario para el producto: " + inventarioDetails.getProductoId());
+        }
+
+        // Verificar que el producto existe en el microservicio de productos
+        if (productoClientRest != null) {
+            try {
+                Object producto = productoClientRest.obtenerProductoPorId(inventarioDetails.getProductoId());
+                if (producto == null) {
+                    throw new InventarioException("El producto con id " + inventarioDetails.getProductoId() + " no existe");
+                }
+            } catch (Exception e) {
+                log.warn("No se pudo verificar el producto en msvc-productos: " + e.getMessage());
+                // Continuar aunque no se pueda verificar (por si el servicio no está disponible)
+            }
         }
 
         Inventario inventario = new Inventario();
@@ -105,7 +122,9 @@ public class InventarioServiceImpl implements InventarioService {
 
     @Override
     public List<Inventario> obtenerProductosAgotados() {
-        return inventarioRepository.findByCantidadDisponibleAndActivoTrue(0);
+        return inventarioRepository.findByCantidadDisponible(0).stream()
+                .filter(Inventario::getActivo)
+                .toList();
     }
 
     @Transactional

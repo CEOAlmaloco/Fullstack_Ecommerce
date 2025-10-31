@@ -59,6 +59,10 @@ public class PromocionServiceImpl implements PromocionService {
         promocionEntity.setUsosPorUsuario(promocionDetails.getUsosPorUsuario());
         promocionEntity.setAplicableDuoc(promocionDetails.getAplicableDuoc());
         promocionEntity.setCategoriaAplicable(promocionDetails.getCategoriaAplicable());
+        promocionEntity.setPuntosRequeridos(promocionDetails.getPuntosRequeridos() != null ? 
+                promocionDetails.getPuntosRequeridos() : 0);
+        promocionEntity.setTipoPromocion(promocionDetails.getTipoPromocion() != null ? 
+                promocionDetails.getTipoPromocion() : "DESCUENTO");
 
         return promocionRepository.save(promocionEntity);
     }
@@ -72,13 +76,7 @@ public class PromocionServiceImpl implements PromocionService {
     @Transactional(readOnly = true)
     @Override
     public List<Promocion> traerTodos() {
-        List<Promocion> promociones = promocionRepository.findAll();
-
-        if (promociones.isEmpty()) {
-            throw new PromocionException("No hay promociones registradas");
-        }
-
-        return promociones;
+        return promocionRepository.findAll();
     }
 
     /**
@@ -169,6 +167,8 @@ public class PromocionServiceImpl implements PromocionService {
             promocion.setUsosPorUsuario(promocionDetails.getUsosPorUsuario());
             promocion.setAplicableDuoc(promocionDetails.getAplicableDuoc());
             promocion.setCategoriaAplicable(promocionDetails.getCategoriaAplicable());
+            promocion.setPuntosRequeridos(promocionDetails.getPuntosRequeridos());
+            promocion.setTipoPromocion(promocionDetails.getTipoPromocion());
             return promocionRepository.save(promocion);
         }).orElseThrow(() -> new PromocionException("Promoción con id " + idPromocion + " no encontrada"));
     }
@@ -267,8 +267,18 @@ public class PromocionServiceImpl implements PromocionService {
             }
             
             // Validar si es aplicable para usuarios Duoc
-            if (promocion.getAplicableDuoc() && !correoUsuario.endsWith("@duoc.cl") && !correoUsuario.endsWith("@profesor.duoc.cl")) {
+            if (promocion.getAplicableDuoc() != null && promocion.getAplicableDuoc() && 
+                !correoUsuario.endsWith("@duoc.cl") && !correoUsuario.endsWith("@profesor.duoc.cl")) {
                 return false;
+            }
+            
+            // Validar puntos requeridos para promociones canjeables con puntos
+            if (promocion.getTipoPromocion() != null && 
+                promocion.getTipoPromocion().equals("CANJE_PUNTOS") && 
+                promocion.getPuntosRequeridos() != null && 
+                promocion.getPuntosRequeridos() > 0) {
+                // Esta validación se debe hacer con el microservicio de puntos
+                // Por ahora retornamos true, pero se debe integrar
             }
             
             return true;

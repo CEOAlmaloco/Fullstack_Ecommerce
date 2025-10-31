@@ -14,6 +14,8 @@ public interface InventarioRepository extends JpaRepository<Inventario, Long> {
     List<Inventario> findByCantidadDisponibleLessThanEqualAndActivoTrue(Integer stockCritico);
 
     List<Inventario> findByCantidadDisponibleAndActivoTrue(Integer cantidadDisponible);
+    
+    List<Inventario> findByCantidadDisponible(Integer cantidadDisponible);
 
     List<Inventario> findByProductoIdIn(List<Long> productosIds);
 }

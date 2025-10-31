@@ -22,4 +22,6 @@ public class PromocionResponseDTO {
     private Boolean activo;
     private Boolean aplicableDuoc;
     private String categoriaAplicable;
+    private Integer puntosRequeridos;
+    private String tipoPromocion;
 }

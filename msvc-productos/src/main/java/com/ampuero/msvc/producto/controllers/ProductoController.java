@@ -33,7 +33,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/productos")
 @Validated
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "http://localhost:3000"})
 @Tag(name = "Producto API",
         description = "Aqui se generan todos los metodos crud para producto")
 public class ProductoController {
@@ -53,9 +53,13 @@ public class ProductoController {
                     description = "operacion de extraccion de productos exitosa")
     })
     public ResponseEntity<List<Producto>> traerTodos() {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(productoService.traerTodo());
+        try {
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(productoService.traerTodo());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.OK).body(java.util.Collections.emptyList());
+        }
     }
 
     // GET: Traer producto por ID
@@ -181,8 +185,11 @@ public class ProductoController {
     // GET: Buscar productos
     @GetMapping("/buscar")
     @Operation(summary = "Buscar productos por nombre", description = "Busca productos que coincidan con el término")
-    public ResponseEntity<List<Producto>> buscarProductos(@RequestParam String nombre) {
-        return ResponseEntity.ok(productoService.buscarPorNombre(nombre));
+    public ResponseEntity<List<Producto>> buscarProductos(@RequestParam(required = false) String nombre) {
+        if (nombre == null || nombre.trim().isEmpty()) {
+            return ResponseEntity.ok(productoService.traerTodo());
+        }
+        return ResponseEntity.ok(productoService.buscarPorNombre(nombre.trim()));
     }
 
     // GET: Filtrar por categoría
@@ -197,6 +204,63 @@ public class ProductoController {
     @Operation(summary = "Productos disponibles", description = "Solo productos con stock y disponibles")
     public ResponseEntity<List<Producto>> productosDisponibles() {
         return ResponseEntity.ok(productoService.obtenerDisponibles());
+    }
+
+    // POST: Filtrar productos con paginación
+    @PostMapping("/filtrar")
+    @Operation(
+            summary = "Filtrar productos con paginación",
+            description = "Filtra productos según criterios (categoría, subcategorías, texto, precio, rating, etc.) y devuelve resultados paginados"
+    )
+    @ApiResponse(responseCode = "200", description = "Productos filtrados obtenidos correctamente")
+    public ResponseEntity<com.ampuero.msvc.producto.dtos.ProductoPaginadoResponseDTO> filtrarProductos(
+            @RequestBody com.ampuero.msvc.producto.dtos.ProductoFiltroDTO filtros) {
+        // Log para verificar qué se está recibiendo
+        System.out.println("CONTROLLER - Filtros recibidos: categoria=" + filtros.getCategoria() + 
+                ", subcategorias=" + filtros.getSubcategorias() + 
+                ", texto=" + filtros.getTexto() + 
+                ", precioMin=" + filtros.getPrecioMin() + 
+                ", precioMax=" + filtros.getPrecioMax() + 
+                ", disponible=" + filtros.getDisponible() + 
+                ", rating=" + filtros.getRating() + 
+                ", orden=" + filtros.getOrden() + 
+                ", pagina=" + filtros.getPagina() + 
+                ", tamano=" + filtros.getTamano());
+        return ResponseEntity.ok(productoService.filtrarProductos(filtros));
+    }
+
+    // GET: Filtrar productos con paginación (versión GET para compatibilidad)
+    @GetMapping("/filtrar")
+    @Operation(
+            summary = "Filtrar productos con paginación (GET)",
+            description = "Filtra productos según criterios usando parámetros de URL"
+    )
+    @ApiResponse(responseCode = "200", description = "Productos filtrados obtenidos correctamente")
+    public ResponseEntity<com.ampuero.msvc.producto.dtos.ProductoPaginadoResponseDTO> filtrarProductosGet(
+            @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) List<String> subcategorias,
+            @RequestParam(required = false) String texto,
+            @RequestParam(required = false) Double precioMin,
+            @RequestParam(required = false) Double precioMax,
+            @RequestParam(required = false) Boolean disponible,
+            @RequestParam(required = false) Double rating,
+            @RequestParam(required = false) String orden,
+            @RequestParam(required = false, defaultValue = "0") Integer pagina,
+            @RequestParam(required = false, defaultValue = "10") Integer tamano) {
+        
+        com.ampuero.msvc.producto.dtos.ProductoFiltroDTO filtros = new com.ampuero.msvc.producto.dtos.ProductoFiltroDTO();
+        filtros.setCategoria(categoria);
+        filtros.setSubcategorias(subcategorias);
+        filtros.setTexto(texto);
+        filtros.setPrecioMin(precioMin);
+        filtros.setPrecioMax(precioMax);
+        filtros.setDisponible(disponible);
+        filtros.setRating(rating);
+        filtros.setOrden(orden);
+        filtros.setPagina(pagina);
+        filtros.setTamano(tamano);
+        
+        return ResponseEntity.ok(productoService.filtrarProductos(filtros));
     }
 
 }

@@ -170,4 +170,11 @@ public interface UsuarioService {
      * @return Mapa con estadísticas
      */
     java.util.Map<String, Object> obtenerEstadisticasUsuarios();
+
+    // Perfil y direcciones para frontend
+    UsuarioResponseDTO getCurrentUserProfile(Long userId);
+    UsuarioResponseDTO updateProfile(Long userId, UsuarioUpdateDTO request);
+    java.util.List<com.ampuero.msvc.usuario.dtos.DireccionUsuarioResponseDTO> getUserAddresses(Long userId);
+    com.ampuero.msvc.usuario.dtos.DireccionUsuarioResponseDTO addAddress(Long userId, com.ampuero.msvc.usuario.entities.DireccionUsuario direccion);
+    void deleteAddress(Long userId, Long direccionId);
 }

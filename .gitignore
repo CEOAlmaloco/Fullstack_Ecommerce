@@ -12,6 +12,11 @@ target/
 *.iml
 *.ipr
 
+msvc-auth/data/
+*.mv.db
+*.lock.db
+
+
 ### Eclipse ###
 .apt_generated
 .classpath

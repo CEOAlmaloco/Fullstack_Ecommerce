@@ -8,6 +8,9 @@ import com.ampuero.msvc.usuario.exceptions.DuplicateResourceException;
 import com.ampuero.msvc.usuario.exceptions.ResourceNotFoundException;
 import com.ampuero.msvc.usuario.exceptions.UsuarioException;
 import com.ampuero.msvc.usuario.repositories.UsuarioRepository;
+import com.ampuero.msvc.usuario.repositories.DireccionUsuarioRepository;
+import com.ampuero.msvc.usuario.entities.DireccionUsuario;
+import com.ampuero.msvc.usuario.dtos.DireccionUsuarioResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -34,6 +37,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final DireccionUsuarioRepository direccionUsuarioRepository;
     private final Random random = new Random();
 
     @Override
@@ -395,5 +399,43 @@ public class UsuarioServiceImpl implements UsuarioService {
         }
         
         return estadisticas;
+    }
+
+    // ===== Perfil y Direcciones (consumo frontend) =====
+    @Override
+    public UsuarioResponseDTO getCurrentUserProfile(Long userId) {
+        Usuario usuario = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+        return new UsuarioResponseDTO(usuario);
+    }
+
+    @Override
+    public UsuarioResponseDTO updateProfile(Long userId, UsuarioUpdateDTO request) {
+        return actualizarUsuario(userId, request);
+    }
+
+    @Override
+    public java.util.List<DireccionUsuarioResponseDTO> getUserAddresses(Long userId) {
+        java.util.List<DireccionUsuario> list = direccionUsuarioRepository.findByUsuario_IdUsuario(userId);
+        return list.stream().map(DireccionUsuarioResponseDTO::new).toList();
+    }
+
+    @Override
+    public DireccionUsuarioResponseDTO addAddress(Long userId, DireccionUsuario direccion) {
+        Usuario u = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+        direccion.setUsuario(u);
+        DireccionUsuario saved = direccionUsuarioRepository.save(direccion);
+        return new DireccionUsuarioResponseDTO(saved);
+    }
+
+    @Override
+    public void deleteAddress(Long userId, Long direccionId) {
+        DireccionUsuario dir = direccionUsuarioRepository.findById(direccionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Dirección no encontrada"));
+        if (!dir.getUsuario().getIdUsuario().equals(userId)) {
+            throw new UsuarioException("No autorizado a eliminar esta dirección");
+        }
+        direccionUsuarioRepository.deleteById(direccionId);
     }
 }
