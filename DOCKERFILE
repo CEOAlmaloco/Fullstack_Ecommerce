@@ -1,0 +1,21 @@
+# Dockerfile base para microservicios Spring Boot
+# Usar como base y personalizar para cada microservicio
+FROM openjdk:17-jdk-slim
+
+WORKDIR /app
+
+# Copiar el JAR del microservicio
+COPY target/*.jar app.jar
+
+# Exponer el puerto (cambiar según microservicio)
+EXPOSE 8003
+
+# Variables de entorno por defecto
+ENV SPRING_PROFILES_ACTIVE=prod
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD curl -f http://localhost:8003/api/v1/health || exit 1
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
+

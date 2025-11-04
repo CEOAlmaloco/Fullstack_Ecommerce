@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -73,6 +74,18 @@ public class CarritoController {
     @GetMapping("/usuario/{idUsuario}/activo")
     public ResponseEntity<CarritoResponseDTO> traerCarritoActivoPorUsuario(@PathVariable Long idUsuario) {
         Carrito carrito = carritoService.traerCarritoActivoPorUsuario(idUsuario);
+        CarritoResponseDTO response = convertirCarritoAResponseDTO(carrito);
+        return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * Obtener carrito activo del usuario autenticado (compatibilidad con Kotlin y Frontend)
+     * GET: /carrito/activo
+     * Usa el header X-User-Id para obtener el usuario autenticado
+     */
+    @GetMapping("/activo")
+    public ResponseEntity<CarritoResponseDTO> traerCarritoActivo(@RequestHeader("X-User-Id") Long userId) {
+        Carrito carrito = carritoService.traerCarritoActivoPorUsuario(userId);
         CarritoResponseDTO response = convertirCarritoAResponseDTO(carrito);
         return ResponseEntity.ok(response);
     }
@@ -269,10 +282,23 @@ public class CarritoController {
     /**
      * Agregar item al carrito
      * POST: /carrito/items
+     * Si se proporciona X-User-Id, devuelve el carrito completo actualizado (compatibilidad con Kotlin)
      */
     @PostMapping("/items")
-    public ResponseEntity<ItemCarritoResponseDTO> agregarItem(@Valid @RequestBody ItemCarritoCreationDTO itemDetails) {
+    public ResponseEntity<?> agregarItem(@Valid @RequestBody ItemCarritoCreationDTO itemDetails, 
+                                        @RequestHeader(value = "X-User-Id", required = false) Long userId) {
         ItemCarrito item = carritoService.agregarItem(itemDetails);
+        
+        // Si hay userId, devolver el carrito completo actualizado (compatibilidad con Kotlin)
+        if (userId != null && item.getCarrito() != null) {
+            Carrito carrito = carritoService.traerCarritoPorId(item.getCarrito().getIdCarrito());
+            if (carrito != null) {
+                CarritoResponseDTO response = convertirCarritoAResponseDTO(carrito);
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            }
+        }
+        
+        // Si no hay userId, devolver solo el item creado (compatibilidad con otros clientes)
         ItemCarritoResponseDTO response = convertirItemAResponseDTO(item);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -350,16 +376,71 @@ public class CarritoController {
         ItemCarritoResponseDTO response = convertirItemAResponseDTO(item);
         return ResponseEntity.ok(response);
     }
+    
+    /**
+     * Actualizar cantidad de item (compatibilidad con Kotlin - devuelve CarritoDto)
+     * PUT: /carrito/items/{itemId}
+     * Usa el header X-User-Id y body con cantidad
+     */
+    @PutMapping("/items/{itemId}")
+    public ResponseEntity<CarritoResponseDTO> actualizarCantidad(@PathVariable Long itemId, 
+                                                                 @RequestHeader(value = "X-User-Id", required = false) Long userId,
+                                                                 @RequestBody(required = false) Map<String, Integer> request) {
+        // Si hay request body con cantidad, usarlo (compatibilidad con Kotlin)
+        if (request != null && request.containsKey("cantidad")) {
+            Integer cantidad = request.get("cantidad");
+            ItemCarrito item = carritoService.actualizarCantidadItem(itemId, cantidad);
+            if (item != null && item.getCarrito() != null && userId != null) {
+                Carrito carrito = carritoService.traerCarritoPorId(item.getCarrito().getIdCarrito());
+                CarritoResponseDTO response = convertirCarritoAResponseDTO(carrito);
+                return ResponseEntity.ok(response);
+            }
+        }
+        
+        // Si no hay request body, devolver error
+        return ResponseEntity.badRequest().build();
+    }
 
     /**
-     * Remover item del carrito
+     * Remover item del carrito (compatibilidad con Kotlin y Frontend - devuelve CarritoDto)
      * DELETE: /carrito/items/{id}
+     * Si se proporciona X-User-Id, devuelve el carrito completo actualizado
      */
     @DeleteMapping("/items/{id}")
-    public ResponseEntity<ItemCarritoResponseDTO> removerItem(@PathVariable Long id) {
-        ItemCarrito item = carritoService.removerItem(id);
+    public ResponseEntity<?> removerItem(@PathVariable Long id, @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+        ItemCarrito item = carritoService.traerItemPorId(id);
+        if (item == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        carritoService.removerItem(id);
+        
+        // Si hay userId, devolver el carrito completo actualizado (compatibilidad con Kotlin)
+        if (userId != null && item.getCarrito() != null) {
+            Carrito carrito = carritoService.traerCarritoPorId(item.getCarrito().getIdCarrito());
+            if (carrito != null) {
+                CarritoResponseDTO response = convertirCarritoAResponseDTO(carrito);
+                return ResponseEntity.ok(response);
+            }
+        }
+        
+        // Si no hay userId, devolver solo el item eliminado (compatibilidad con otros clientes)
         ItemCarritoResponseDTO response = convertirItemAResponseDTO(item);
         return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * Vaciar carrito (compatibilidad con Kotlin)
+     * DELETE: /carrito/vaciar
+     * Usa el header X-User-Id para obtener el usuario autenticado
+     */
+    @DeleteMapping("/vaciar")
+    public ResponseEntity<Void> vaciarCarrito(@RequestHeader("X-User-Id") Long userId) {
+        Carrito carrito = carritoService.traerCarritoActivoPorUsuario(userId);
+        if (carrito != null) {
+            carritoService.limpiarCarrito(carrito.getIdCarrito());
+        }
+        return ResponseEntity.noContent().build();
     }
 
     /**

@@ -14,7 +14,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/gateway")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173", "http://10.0.2.2:8094"})
 @Tag(name = "Gateway", description = "API Gateway Level-Up Gamer")
 public class GatewayController {
 

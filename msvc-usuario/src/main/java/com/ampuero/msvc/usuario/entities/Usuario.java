@@ -61,6 +61,12 @@ public class Usuario {
     @Column(name = "direccion", length = 255)
     private String direccion;
 
+    @Column(name = "region", length = 100)
+    private String region;
+
+    @Column(name = "comuna", length = 100)
+    private String comuna;
+
     @Column(name = "ciudad", length = 100)
     private String ciudad;
 
@@ -107,6 +113,9 @@ public class Usuario {
 
     @Column(name = "puntos_levelup", nullable = false)
     private Integer puntosLevelUp = 0;
+
+    @Column(name = "codigos_canjeados", columnDefinition = "TEXT")
+    private String codigosCanjeados; // JSON array de códigos canjeados
 
     @Enumerated(EnumType.STRING)
     @Column(name = "nivel_usuario", nullable = false, length = 20)

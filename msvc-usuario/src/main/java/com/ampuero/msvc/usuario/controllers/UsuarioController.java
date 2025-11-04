@@ -31,7 +31,7 @@ import com.ampuero.msvc.usuario.dtos.DireccionUsuarioResponseDTO;
  */
 @RestController
 @RequestMapping("/api/v1/usuarios")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173", "http://10.0.2.2:8094"})
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Usuario API", description = "API para gestión de usuarios Level-Up Gamer")

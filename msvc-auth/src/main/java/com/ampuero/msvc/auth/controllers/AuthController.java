@@ -17,7 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/auth")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173", "http://10.0.2.2:8094"})
 @Tag(name = "Auth API", description = "Autenticación JWT Level-Up Gamer")
 public class AuthController {
 

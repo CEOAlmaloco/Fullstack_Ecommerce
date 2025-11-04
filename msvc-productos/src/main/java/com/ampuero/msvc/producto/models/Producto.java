@@ -30,6 +30,16 @@ public class Producto {
     @Column(nullable = false)
     @Schema(description = "título del producto", examples = "PlayStation 5")
     private String titulo;
+    
+    // Campo de compatibilidad para frontend React y Kotlin (alias de titulo)
+    @JsonProperty("nombre")
+    public String getNombre() {
+        return titulo;
+    }
+    
+    public void setNombre(String nombre) {
+        this.titulo = nombre;
+    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id", nullable = false)
@@ -78,6 +88,16 @@ public class Producto {
     @Column
     @Schema(description = "URL de la imagen principal", examples = "/img/consolas/4.png")
     private String imagen;
+    
+    // Campo de compatibilidad para frontend React y Kotlin (alias de imagen)
+    @JsonProperty("imagenUrl")
+    public String getImagenUrl() {
+        return imagen;
+    }
+    
+    public void setImagenUrl(String imagenUrl) {
+        this.imagen = imagenUrl;
+    }
 
     @Column(columnDefinition = "TEXT")
     @Schema(description = "URLs de imágenes adicionales en formato JSON")

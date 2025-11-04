@@ -1,0 +1,215 @@
+version: '3.8'
+
+services:
+  # Gateway
+  gateway:
+    build:
+      context: ./msvc-gateway
+      dockerfile: ../DOCKERFILE
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_URL=jdbc:postgresql://postgres:5432/levelup_gateway
+      - DB_USERNAME=levelup_user
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - postgres
+    networks:
+      - levelup-network
+
+  # Auth
+  auth:
+    build:
+      context: ./msvc-auth
+      dockerfile: ../DOCKERFILE
+    ports:
+      - "8001:8001"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_URL=jdbc:postgresql://postgres:5432/levelup_auth
+      - DB_USERNAME=levelup_user
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - postgres
+    networks:
+      - levelup-network
+
+  # Usuario
+  usuario:
+    build:
+      context: ./msvc-usuario
+      dockerfile: ../DOCKERFILE
+    ports:
+      - "8095:8095"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_URL=jdbc:postgresql://postgres:5432/levelup_usuario
+      - DB_USERNAME=levelup_user
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - postgres
+    networks:
+      - levelup-network
+
+  # Productos
+  productos:
+    build:
+      context: ./msvc-productos
+      dockerfile: ../DOCKERFILE
+    ports:
+      - "8003:8003"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_URL=jdbc:postgresql://postgres:5432/levelup_productos
+      - DB_USERNAME=levelup_user
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - postgres
+    networks:
+      - levelup-network
+
+  # Carrito
+  carrito:
+    build:
+      context: ./msvc-carrito
+      dockerfile: ../DOCKERFILE
+    ports:
+      - "8008:8008"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_URL=jdbc:postgresql://postgres:5432/levelup_carrito
+      - DB_USERNAME=levelup_user
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - postgres
+    networks:
+      - levelup-network
+
+  # Pedido
+  pedido:
+    build:
+      context: ./msvc-pedido
+      dockerfile: ../DOCKERFILE
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_URL=jdbc:postgresql://postgres:5432/levelup_pedido
+      - DB_USERNAME=levelup_user
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - postgres
+    networks:
+      - levelup-network
+
+  # Pagos
+  pagos:
+    build:
+      context: ./msvc-pagos
+      dockerfile: ../DOCKERFILE
+    ports:
+      - "8011:8011"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_URL=jdbc:postgresql://postgres:5432/levelup_pagos
+      - DB_USERNAME=levelup_user
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - postgres
+    networks:
+      - levelup-network
+
+  # Resenia
+  resenia:
+    build:
+      context: ./msvc-resenia
+      dockerfile: ../DOCKERFILE
+    ports:
+      - "8010:8010"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_URL=jdbc:postgresql://postgres:5432/levelup_resenia
+      - DB_USERNAME=levelup_user
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - postgres
+    networks:
+      - levelup-network
+
+  # Referidos
+  referidos:
+    build:
+      context: ./msvc-referidos
+      dockerfile: ../DOCKERFILE
+    ports:
+      - "8005:8005"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_URL=jdbc:postgresql://postgres:5432/levelup_referidos
+      - DB_USERNAME=levelup_user
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - postgres
+    networks:
+      - levelup-network
+
+  # Promociones
+  promociones:
+    build:
+      context: ./msvc-promociones
+      dockerfile: ../DOCKERFILE
+    ports:
+      - "8091:8091"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_URL=jdbc:postgresql://postgres:5432/levelup_promociones
+      - DB_USERNAME=levelup_user
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - postgres
+    networks:
+      - levelup-network
+
+  # Inventario
+  inventario:
+    build:
+      context: ./msvc-inventario
+      dockerfile: ../DOCKERFILE
+    ports:
+      - "8004:8004"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - DB_URL=jdbc:postgresql://postgres:5432/levelup_inventario
+      - DB_USERNAME=levelup_user
+      - DB_PASSWORD=${DB_PASSWORD}
+      - PRODUCTOS_URL=http://productos:8003/api/v1
+    depends_on:
+      - postgres
+      - productos
+    networks:
+      - levelup-network
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=levelup_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_MULTIPLE_DATABASES=levelup_auth,levelup_usuario,levelup_productos,levelup_carrito,levelup_pedido,levelup_pagos,levelup_resenia,levelup_referidos,levelup_promociones,levelup_inventario
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh
+    ports:
+      - "5432:5432"
+    networks:
+      - levelup-network
+
+networks:
+  levelup-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+

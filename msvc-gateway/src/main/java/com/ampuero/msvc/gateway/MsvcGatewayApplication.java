@@ -19,19 +19,22 @@ public class MsvcGatewayApplication {
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
-                // Auth Service
+                // Auth Service - Rutea /auth/** a /api/v1/auth/** en el microservicio
                 .route("msvc-auth", r -> r.path("/auth/**")
+                        .filters(f -> f.rewritePath("/auth/(?<path>.*)", "/api/v1/auth/${path}"))
                         .uri("http://localhost:8001"))
 
-                // User Service
+                // User Service - Rutea /usuarios/** a /api/v1/usuarios/** en el microservicio
                 .route("msvc-usuario", r -> r.path("/usuarios/**")
+                        .filters(f -> f.rewritePath("/usuarios/(?<path>.*)", "/api/v1/usuarios/${path}"))
                         .uri("http://localhost:8095"))
 
-                // Product Service
-                .route("msvc-productos", r -> r.path("/productos/**")
+                // Product Service - Reescribe /productos a /api/v1/productos y /productos/** a /api/v1/productos/**
+                .route("msvc-productos", r -> r.path("/productos", "/productos/**")
+                        .filters(f -> f.rewritePath("/productos(?<path>.*)", "/api/v1/productos${path}"))
                         .uri("http://localhost:8003"))
 
-                // Cart Service
+                // Cart Service - Sin prefijo, va directo a /carrito/**
                 .route("msvc-carrito", r -> r.path("/carrito/**")
                         .uri("http://localhost:8008"))
 
@@ -78,7 +81,9 @@ public class MsvcGatewayApplication {
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
         corsConfig.addAllowedOrigin("http://localhost:3000"); // Frontend React
+        corsConfig.addAllowedOrigin("http://localhost:5173"); // Frontend React Vite
         corsConfig.addAllowedOrigin("http://localhost:4200"); // Frontend Angular
+        corsConfig.addAllowedOrigin("http://10.0.2.2:8094"); // Android Emulator
         corsConfig.addAllowedMethod("*");
         corsConfig.addAllowedHeader("*");
         corsConfig.setAllowCredentials(true);

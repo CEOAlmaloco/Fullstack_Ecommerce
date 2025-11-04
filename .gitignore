@@ -16,6 +16,14 @@ msvc-auth/data/
 *.mv.db
 *.lock.db
 
+# API Keys y Secrets (NUNCA commitear)
+**/.env
+**/.env.production
+**/application-prod.properties
+**/*api-key*.txt
+**/*secret*.txt
+**/*.key
+
 
 ### Eclipse ###
 .apt_generated
