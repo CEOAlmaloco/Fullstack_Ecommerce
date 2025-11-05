@@ -1,0 +1,12 @@
+2025-11-04 21:57:35.988097-03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Valor demasiado largo para la columna "IMAGEN CHARACTER VARYING(255)": "'data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxAQEBMQEBAPDxAQDw8PE... (4822)"
+Value too long for column "IMAGEN CHARACTER VARYING(255)": "'data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxAQEBMQEBAPDxAQDw8PE... (4822)"; SQL statement:
+update productos set categoria_id=?,codigo_producto=?,created_at=?,descripcion=?,disponible=?,imagen=?,imagenes=?,precio=?,rating=?,stock=?,subcategoria_id=?,titulo=?,updated_at=? where id_producto=? [22001-232]
+2025-11-04 22:04:47.469897-03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Valor demasiado largo para la columna "IMAGEN CHARACTER VARYING(255)": "'data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxAQEBMQEBAPDxAQDw8PE... (4822)"
+Value too long for column "IMAGEN CHARACTER VARYING(255)": "'data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxAQEBMQEBAPDxAQDw8PE... (4822)"; SQL statement:
+update productos set categoria_id=?,codigo_producto=?,created_at=?,descripcion=?,disponible=?,imagen=?,imagenes=?,precio=?,rating=?,stock=?,subcategoria_id=?,titulo=?,updated_at=? where id_producto=? [22001-232]
+2025-11-04 22:07:13.428707-03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Valor demasiado largo para la columna "IMAGEN CHARACTER VARYING(255)": "'data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxAQEBMQEBAPDxAQDw8PE... (4822)"
+Value too long for column "IMAGEN CHARACTER VARYING(255)": "'data:image/png;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBxAQEBMQEBAPDxAQDw8PE... (4822)"; SQL statement:
+update productos set categoria_id=?,codigo_producto=?,created_at=?,descripcion=?,disponible=?,imagen=?,imagenes=?,precio=?,rating=?,stock=?,subcategoria_id=?,titulo=?,updated_at=? where id_producto=? [22001-232]

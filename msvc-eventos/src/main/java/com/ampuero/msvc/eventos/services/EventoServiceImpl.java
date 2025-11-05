@@ -51,6 +51,7 @@ public class EventoServiceImpl implements EventoService {
         eventoEntity.setFechaInicio(eventoDetails.getFechaInicio());
         eventoEntity.setFechaFin(eventoDetails.getFechaFin());
         eventoEntity.setUbicacionEvento(eventoDetails.getUbicacionEvento());
+        eventoEntity.setCiudad(eventoDetails.getCiudad());
         eventoEntity.setCoordenadasLatitud(eventoDetails.getCoordenadasLatitud());
         eventoEntity.setCoordenadasLongitud(eventoDetails.getCoordenadasLongitud());
         eventoEntity.setTipoEvento(eventoDetails.getTipoEvento());

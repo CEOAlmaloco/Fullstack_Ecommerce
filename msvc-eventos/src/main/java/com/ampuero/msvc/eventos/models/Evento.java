@@ -33,11 +33,20 @@ public class Evento {
     @Column(name = "ubicacion_evento")
     private String ubicacionEvento;
 
+    @Column(name = "ciudad")
+    private String ciudad;
+
     @Column(name = "coordenadas_latitud")
     private Double coordenadasLatitud;
 
     @Column(name = "coordenadas_longitud")
     private Double coordenadasLongitud;
+
+    @Column(name = "imagen", columnDefinition = "TEXT")
+    private String imagen;
+
+    @Column(name = "imagenes", columnDefinition = "TEXT")
+    private String imagenes;
 
     @Column(name = "tipo_evento")
     private String tipoEvento; // TORNEO, LANZAMIENTO, MEETUP, WORKSHOP

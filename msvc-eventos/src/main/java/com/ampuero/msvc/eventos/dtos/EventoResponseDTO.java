@@ -22,4 +22,7 @@ public class EventoResponseDTO {
     private Boolean activo;
     private Integer requisitosEdad;
     private String equiposRequeridos;
+    private String ciudad;
+    private String imagen;
+    private String imagenes;
 }

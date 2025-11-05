@@ -27,7 +27,7 @@ public class Articulo {
     @Column(name = "resumen_articulo")
     private String resumenArticulo;
 
-    @Column(name = "imagen_articulo")
+    @Column(name = "imagen_articulo", columnDefinition = "TEXT")
     private String imagenArticulo;
 
     @Column(name = "categoria_articulo")

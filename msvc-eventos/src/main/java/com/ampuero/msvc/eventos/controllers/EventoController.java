@@ -222,6 +222,9 @@ public class EventoController {
         response.setActivo(evento.getActivo());
         response.setRequisitosEdad(evento.getRequisitosEdad());
         response.setEquiposRequeridos(evento.getEquiposRequeridos());
+        response.setCiudad(evento.getCiudad());
+        response.setImagen(evento.getImagen());
+        response.setImagenes(evento.getImagenes());
         return response;
     }
 }

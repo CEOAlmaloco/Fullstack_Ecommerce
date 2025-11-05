@@ -50,8 +50,9 @@ public class MsvcGatewayApplication {
                 .route("msvc-referidos", r -> r.path("/referidos/**")
                         .uri("http://localhost:8005"))
 
-                // Review Service
+                // Review Service - Rutea /resenias/** a /api/v1/resenias/** en el microservicio
                 .route("msvc-resenia", r -> r.path("/resenias/**")
+                        .filters(f -> f.rewritePath("/resenias/(?<path>.*)", "/api/v1/resenias/${path}"))
                         .uri("http://localhost:8010"))
 
                 // Payment Service

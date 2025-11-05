@@ -1,0 +1,1087 @@
+{
+	"info": {
+		"_postman_id": "levelup-gamer-2024",
+		"name": "Level Up Gamer - GET Endpoints",
+		"description": "Colección completa de endpoints GET para todos los microservicios de Level Up Gamer",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "value",
+				"value": "levelup-2024-secret-api-key-change-in-production",
+				"type": "string"
+			},
+			{
+				"key": "key",
+				"value": "X-API-Key",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "1. Productos",
+			"item": [
+				{
+					"name": "GET - Todos los productos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/productos",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["productos"]
+						}
+					}
+				},
+				{
+					"name": "GET - Producto por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/productos/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["productos", "1"]
+						}
+					}
+				},
+				{
+					"name": "GET - Categorías",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/productos/categorias",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["productos", "categorias"]
+						}
+					}
+				},
+				{
+					"name": "GET - Buscar productos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/productos/buscar?nombre=PlayStation",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["productos", "buscar"],
+							"query": [
+								{
+									"key": "nombre",
+									"value": "PlayStation"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "GET - Productos por categoría",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/productos/categoria/CO",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["productos", "categoria", "CO"]
+						}
+					}
+				},
+				{
+					"name": "GET - Productos disponibles",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/productos/disponibles",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["productos", "disponibles"]
+						}
+					}
+				},
+				{
+					"name": "GET - Carrusel imágenes",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/productos/carrusel",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["productos", "carrusel"]
+						}
+					}
+				},
+				{
+					"name": "GET - Logo",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/productos/logo",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["productos", "logo"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Usuarios",
+			"item": [
+				{
+					"name": "GET - Todos los usuarios",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8095/api/v1/usuarios?page=0&size=20",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8095",
+							"path": ["api", "v1", "usuarios"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "GET - Usuario por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8095/api/v1/usuarios/5",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8095",
+							"path": ["api", "v1", "usuarios", "5"]
+						}
+					}
+				},
+				{
+					"name": "GET - Perfil usuario",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "5",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8095/api/v1/usuarios/perfil",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8095",
+							"path": ["api", "v1", "usuarios", "perfil"]
+						}
+					}
+				},
+				{
+					"name": "GET - Direcciones usuario",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							},
+							{
+								"key": "X-User-Id",
+								"value": "5",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8095/api/v1/usuarios/direcciones",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8095",
+							"path": ["api", "v1", "usuarios", "direcciones"]
+						}
+					}
+				},
+				{
+					"name": "GET - Usuario por correo",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8095/api/v1/usuarios/correo/aa@gmail.com",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8095",
+							"path": ["api", "v1", "usuarios", "correo", "aa@gmail.com"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Carrito",
+			"item": [
+				{
+					"name": "GET - Todos los carritos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8008/carrito",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8008",
+							"path": ["carrito"]
+						}
+					}
+				},
+				{
+					"name": "GET - Carrito por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8008/carrito/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8008",
+							"path": ["carrito", "1"]
+						}
+					}
+				},
+				{
+					"name": "GET - Carrito por usuario",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8008/carrito/usuario/5",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8008",
+							"path": ["carrito", "usuario", "5"]
+						}
+					}
+				},
+				{
+					"name": "GET - Carrito activo de usuario",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8008/carrito/usuario/5/activo",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8008",
+							"path": ["carrito", "usuario", "5", "activo"]
+						}
+					}
+				},
+				{
+					"name": "GET - Items del carrito",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8008/carrito/items",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8008",
+							"path": ["carrito", "items"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Inventario",
+			"item": [
+				{
+					"name": "GET - Todo el inventario",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8004/inventario",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8004",
+							"path": ["inventario"]
+						}
+					}
+				},
+				{
+					"name": "GET - Inventario por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8004/inventario/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8004",
+							"path": ["inventario", "1"]
+						}
+					}
+				},
+				{
+					"name": "GET - Inventario por producto",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8004/inventario/producto/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8004",
+							"path": ["inventario", "producto", "1"]
+						}
+					}
+				},
+				{
+					"name": "GET - Stock crítico",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8004/inventario/stock-critico",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8004",
+							"path": ["inventario", "stock-critico"]
+						}
+					}
+				},
+				{
+					"name": "GET - Productos agotados",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8004/inventario/agotados",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8004",
+							"path": ["inventario", "agotados"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Referidos",
+			"item": [
+				{
+					"name": "GET - Todos los referidos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8005/referidos",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8005",
+							"path": ["referidos"]
+						}
+					}
+				},
+				{
+					"name": "GET - Referido por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8005/referidos/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8005",
+							"path": ["referidos", "1"]
+						}
+					}
+				},
+				{
+					"name": "GET - Código de referido por usuario",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8005/referidos/codigo?idUsuario=5",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8005",
+							"path": ["referidos", "codigo"],
+							"query": [
+								{
+									"key": "idUsuario",
+									"value": "5"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "GET - Referido por código",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8005/referidos/codigo/REFAA001",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8005",
+							"path": ["referidos", "codigo", "REFAA001"]
+						}
+					}
+				},
+				{
+					"name": "GET - Lista de referidos por usuario",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8005/referidos/lista?idUsuario=5",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8005",
+							"path": ["referidos", "lista"],
+							"query": [
+								{
+									"key": "idUsuario",
+									"value": "5"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "GET - Puntos de referido",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8005/referidos/1/puntos",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8005",
+							"path": ["referidos", "1", "puntos"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "6. Reseñas",
+			"item": [
+				{
+					"name": "GET - Todas las reseñas",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/resenias",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["resenias"]
+						}
+					}
+				},
+				{
+					"name": "GET - Reseña por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/resenias/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["resenias", "1"]
+						}
+					}
+				},
+				{
+					"name": "GET - Reseñas por producto",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/resenias/producto/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["resenias", "producto", "1"]
+						}
+					}
+				},
+				{
+					"name": "GET - Reseñas por usuario",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/resenias/usuario/5",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["resenias", "usuario", "5"]
+						}
+					}
+				},
+				{
+					"name": "GET - Rating promedio producto",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/resenias/producto/1/rating-promedio",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["resenias", "producto", "1", "rating-promedio"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "7. Eventos",
+			"item": [
+				{
+					"name": "GET - Todos los eventos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/eventos",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["eventos"]
+						}
+					}
+				},
+				{
+					"name": "GET - Evento por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/eventos/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["eventos", "1"]
+						}
+					}
+				},
+				{
+					"name": "GET - Eventos futuros",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/eventos/futuros",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["eventos", "futuros"]
+						}
+					}
+				},
+				{
+					"name": "GET - Eventos en curso",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/eventos/en-curso",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["eventos", "en-curso"]
+						}
+					}
+				},
+				{
+					"name": "GET - Eventos por tipo",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/eventos/tipo/TORNEO",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["eventos", "tipo", "TORNEO"]
+						}
+					}
+				},
+				{
+					"name": "GET - Eventos con cupos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/eventos/con-cupos",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["eventos", "con-cupos"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "8. Contenido (Blogs)",
+			"item": [
+				{
+					"name": "GET - Todos los artículos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/contenido/articulos",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["contenido", "articulos"]
+						}
+					}
+				},
+				{
+					"name": "GET - Artículos publicados",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/contenido/articulos/publicados",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["contenido", "articulos", "publicados"]
+						}
+					}
+				},
+				{
+					"name": "GET - Artículo por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/contenido/articulos/1",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["contenido", "articulos", "1"]
+						}
+					}
+				},
+				{
+					"name": "GET - Artículos destacados",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/contenido/articulos/destacados",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["contenido", "articulos", "destacados"]
+						}
+					}
+				},
+				{
+					"name": "GET - Artículos por categoría",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/contenido/articulos/categoria/NOTICIAS",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["contenido", "articulos", "categoria", "NOTICIAS"]
+						}
+					}
+				},
+				{
+					"name": "GET - Buscar artículos",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/contenido/articulos/buscar?q=PlayStation",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["contenido", "articulos", "buscar"],
+							"query": [
+								{
+									"key": "q",
+									"value": "PlayStation"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "9. Gateway",
+			"item": [
+				{
+					"name": "GET - Health Gateway",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/actuator/health",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["actuator", "health"]
+						}
+					}
+				},
+				{
+					"name": "GET - Routes Gateway",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "levelup-2024-secret-api-key-change-in-production",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8094/actuator/gateway/routes",
+							"protocol": "http",
+							"host": ["localhost"],
+							"port": "8094",
+							"path": ["actuator", "gateway", "routes"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url_gateway",
+			"value": "http://localhost:8094",
+			"type": "string"
+		},
+		{
+			"key": "api_key",
+			"value": "levelup-2024-secret-api-key-change-in-production",
+			"type": "string"
+		}
+	]
+}
+

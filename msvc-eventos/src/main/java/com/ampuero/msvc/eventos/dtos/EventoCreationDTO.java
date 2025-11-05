@@ -24,6 +24,7 @@ public class EventoCreationDTO {
     private LocalDateTime fechaFin;
     
     private String ubicacionEvento;
+    private String ciudad;
     private Double coordenadasLatitud;
     private Double coordenadasLongitud;
     

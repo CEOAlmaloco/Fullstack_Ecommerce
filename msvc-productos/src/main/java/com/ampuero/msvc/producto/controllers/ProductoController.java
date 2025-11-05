@@ -3,6 +3,7 @@ package com.ampuero.msvc.producto.controllers;
 
 import com.ampuero.msvc.producto.dtos.ErrorDTO;
 import com.ampuero.msvc.producto.models.Producto;
+import com.ampuero.msvc.producto.services.ImageBase64Service;
 import com.ampuero.msvc.producto.services.ProductoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -40,6 +41,9 @@ public class ProductoController {
 
     @Autowired
     private ProductoService productoService;
+
+    @Autowired
+    private ImageBase64Service imageBase64Service;
 
     // GET: Traer todos los productos
     @GetMapping
@@ -261,6 +265,72 @@ public class ProductoController {
         filtros.setTamano(tamano);
         
         return ResponseEntity.ok(productoService.filtrarProductos(filtros));
+    }
+
+    // GET: Obtener imágenes del carrusel
+    @GetMapping("/carrusel")
+    @Operation(summary = "Obtener imágenes del carrusel", description = "Devuelve las imágenes del carrusel en Base64")
+    @ApiResponse(responseCode = "200", description = "Imágenes del carrusel obtenidas correctamente")
+    public ResponseEntity<List<java.util.Map<String, String>>> obtenerImagenesCarrusel() {
+        try {
+            java.util.List<java.util.Map<String, String>> carrusel = new java.util.ArrayList<>();
+            
+            // Imagen 1: Carrusel principal
+            String imagen1 = imageBase64Service.convertImageToBase64("img/carrusel.png");
+            if (imagen1 == null) {
+                imagen1 = imageBase64Service.convertImageToBase64("img/play5white.png"); // Fallback
+            }
+            java.util.Map<String, String> item1 = new java.util.HashMap<>();
+            item1.put("id", "1");
+            item1.put("url", imagen1 != null ? imagen1 : "");
+            item1.put("nombre", "¡Bienvenido a Level-Up Gamer!");
+            item1.put("descripcion", "La tienda gamer lider en todo Chile");
+            carrusel.add(item1);
+
+            // Imagen 2: Productos
+            String imagen2 = imageBase64Service.convertImageToBase64("img/play5white.png");
+            java.util.Map<String, String> item2 = new java.util.HashMap<>();
+            item2.put("id", "2");
+            item2.put("url", imagen2 != null ? imagen2 : "");
+            item2.put("nombre", "!Explora nuestros productos gamer de alta calidad!");
+            item2.put("descripcion", "Tenemos una gama alta de productos para ti y tu amor por el gaming");
+            carrusel.add(item2);
+
+            // Imagen 3: Blogs
+            String imagen3 = imageBase64Service.convertImageToBase64("img/monitorasus.png");
+            java.util.Map<String, String> item3 = new java.util.HashMap<>();
+            item3.put("id", "3");
+            item3.put("url", imagen3 != null ? imagen3 : "");
+            item3.put("nombre", "¡Lee desde noticias a guias del mundo gaming!");
+            item3.put("descripcion", "Con nuestros blogs estarás atento a todo");
+            carrusel.add(item3);
+
+            return ResponseEntity.ok(carrusel);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(java.util.Collections.emptyList());
+        }
+    }
+
+    // GET: Obtener logo
+    @GetMapping("/logo")
+    @Operation(summary = "Obtener logo", description = "Devuelve el logo en Base64")
+    @ApiResponse(responseCode = "200", description = "Logo obtenido correctamente")
+    public ResponseEntity<java.util.Map<String, String>> obtenerLogo() {
+        try {
+            String logo = imageBase64Service.convertImageToBase64("img/logo.png");
+            if (logo == null) {
+                logo = ""; // Si no hay logo, retornar string vacío
+            }
+            java.util.Map<String, String> response = new java.util.HashMap<>();
+            response.put("url", logo);
+            response.put("alt", "Logo Level Up");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            java.util.Map<String, String> response = new java.util.HashMap<>();
+            response.put("url", "");
+            response.put("alt", "Logo Level Up");
+            return ResponseEntity.ok(response);
+        }
     }
 
 }

@@ -55,6 +55,49 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioCreado);
     }
 
+    // ===== Endpoints de perfil y direcciones (deben ir ANTES de /{id}) =====
+    @GetMapping("/perfil")
+    @Operation(summary = "Obtener perfil del usuario", description = "Obtiene el perfil del usuario autenticado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Perfil obtenido exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+    })
+    public ResponseEntity<UsuarioResponseDTO> getPerfil(@RequestHeader("X-User-Id") Long userId) {
+        log.info("Obteniendo perfil del usuario: {}", userId);
+        return ResponseEntity.ok(usuarioService.getCurrentUserProfile(userId));
+    }
+
+    @PutMapping("/perfil")
+    @Operation(summary = "Actualizar perfil del usuario", description = "Actualiza el perfil del usuario autenticado")
+    public ResponseEntity<UsuarioResponseDTO> updatePerfil(@RequestHeader("X-User-Id") Long userId,
+                                                           @Valid @RequestBody UsuarioUpdateDTO request) {
+        log.info("Actualizando perfil del usuario: {}", userId);
+        return ResponseEntity.ok(usuarioService.updateProfile(userId, request));
+    }
+
+    @GetMapping("/direcciones")
+    @Operation(summary = "Obtener direcciones del usuario", description = "Obtiene las direcciones del usuario autenticado")
+    public ResponseEntity<List<DireccionUsuarioResponseDTO>> getDirecciones(@RequestHeader("X-User-Id") Long userId) {
+        log.info("Obteniendo direcciones del usuario: {}", userId);
+        return ResponseEntity.ok(usuarioService.getUserAddresses(userId));
+    }
+
+    @PostMapping("/direcciones")
+    @Operation(summary = "Agregar dirección al usuario", description = "Agrega una nueva dirección al usuario autenticado")
+    public ResponseEntity<DireccionUsuarioResponseDTO> addDireccion(@RequestHeader("X-User-Id") Long userId,
+                                                                     @Valid @RequestBody DireccionUsuario direccion) {
+        log.info("Agregando dirección al usuario: {}", userId);
+        return new ResponseEntity<>(usuarioService.addAddress(userId, direccion), HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/direcciones/{id}")
+    @Operation(summary = "Eliminar dirección del usuario", description = "Elimina una dirección del usuario autenticado")
+    public ResponseEntity<Void> deleteDireccion(@RequestHeader("X-User-Id") Long userId, @PathVariable Long id) {
+        log.info("Eliminando dirección {} del usuario: {}", id, userId);
+        usuarioService.deleteAddress(userId, id);
+        return ResponseEntity.noContent().build();
+    }
+
     /**
      * Obtiene un usuario por ID
      */
@@ -346,32 +389,4 @@ public class UsuarioController {
         return ResponseEntity.ok(Map.of("disponible", disponible));
     }
 
-    // ===== Endpoints de perfil y direcciones para el frontend =====
-    @GetMapping("/perfil")
-    public ResponseEntity<UsuarioResponseDTO> getPerfil(@RequestHeader("X-User-Id") Long userId) {
-        return ResponseEntity.ok(usuarioService.getCurrentUserProfile(userId));
-    }
-
-    @PutMapping("/perfil")
-    public ResponseEntity<UsuarioResponseDTO> updatePerfil(@RequestHeader("X-User-Id") Long userId,
-                                                           @Valid @RequestBody UsuarioUpdateDTO request) {
-        return ResponseEntity.ok(usuarioService.updateProfile(userId, request));
-    }
-
-    @GetMapping("/direcciones")
-    public ResponseEntity<List<DireccionUsuarioResponseDTO>> getDirecciones(@RequestHeader("X-User-Id") Long userId) {
-        return ResponseEntity.ok(usuarioService.getUserAddresses(userId));
-    }
-
-    @PostMapping("/direcciones")
-    public ResponseEntity<DireccionUsuarioResponseDTO> addDireccion(@RequestHeader("X-User-Id") Long userId,
-                                                                     @Valid @RequestBody DireccionUsuario direccion) {
-        return new ResponseEntity<>(usuarioService.addAddress(userId, direccion), HttpStatus.CREATED);
-    }
-
-    @DeleteMapping("/direcciones/{id}")
-    public ResponseEntity<Void> deleteDireccion(@RequestHeader("X-User-Id") Long userId, @PathVariable Long id) {
-        usuarioService.deleteAddress(userId, id);
-        return ResponseEntity.noContent().build();
-    }
 }

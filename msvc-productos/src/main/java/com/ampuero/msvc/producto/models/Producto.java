@@ -85,8 +85,8 @@ public class Producto {
     @Transient
     private String subcategoriaId;
 
-    @Column
-    @Schema(description = "URL de la imagen principal", examples = "/img/consolas/4.png")
+    @Column(columnDefinition = "TEXT")
+    @Schema(description = "URL de la imagen principal en Base64", examples = "data:image/png;base64,...")
     private String imagen;
     
     // Campo de compatibilidad para frontend React y Kotlin (alias de imagen)

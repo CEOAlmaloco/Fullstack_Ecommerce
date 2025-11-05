@@ -16,5 +16,6 @@ public interface ReseniaRepository extends JpaRepository<Resenia, Long> {
     Optional<Resenia> findByIdAndActivoTrue(Long id);
     List<Resenia> findByRating(Integer rating);
     List<Resenia> findByIdProductoOrderByFechaCreacionDesc(Long idProducto);
+    boolean existsByIdProductoAndIdUsuario(Long idProducto, Long idUsuario);
 }
 

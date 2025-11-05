@@ -31,4 +31,6 @@ public interface EventoRepository extends JpaRepository<Evento, Long> {
     List<Evento> findByActivoTrue();
     
     Optional<Evento> findByNombreEvento(String nombreEvento);
+    
+    boolean existsByNombreEvento(String nombreEvento);
 }
