@@ -2,8 +2,10 @@ package com.ampuero.msvc.producto.controllers;
 
 
 import com.ampuero.msvc.producto.dtos.ErrorDTO;
+import com.ampuero.msvc.producto.dtos.ProductoResponseDTO;
 import com.ampuero.msvc.producto.models.Producto;
 import com.ampuero.msvc.producto.services.ImageBase64Service;
+import com.ampuero.msvc.producto.services.ProductoMapper;
 import com.ampuero.msvc.producto.services.ProductoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -45,6 +47,9 @@ public class ProductoController {
     @Autowired
     private ImageBase64Service imageBase64Service;
 
+    @Autowired
+    private ProductoMapper productoMapper;
+
     // GET: Traer todos los productos
     @GetMapping
     @Operation(
@@ -56,11 +61,13 @@ public class ProductoController {
             @ApiResponse(responseCode = "200",
                     description = "operacion de extraccion de productos exitosa")
     })
-    public ResponseEntity<List<Producto>> traerTodos() {
+    public ResponseEntity<List<ProductoResponseDTO>> traerTodos() {
         try {
+            List<Producto> productos = productoService.traerTodo();
+            List<ProductoResponseDTO> productosDTO = productoMapper.toDTOList(productos);
             return ResponseEntity
                     .status(HttpStatus.OK)
-                    .body(productoService.traerTodo());
+                    .body(productosDTO);
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.OK).body(java.util.Collections.emptyList());
         }
@@ -93,10 +100,15 @@ public class ProductoController {
                     )
             )
     })
-    public ResponseEntity<Producto> traerPorId(@PathVariable Long id) {
+    public ResponseEntity<ProductoResponseDTO> traerPorId(@PathVariable Long id) {
+        Producto producto = this.productoService.traerPorId(id);
+        if (producto == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        ProductoResponseDTO productoDTO = productoMapper.toDTO(producto);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.productoService.traerPorId(id));
+                .body(productoDTO);
     }
 
     // POST: Crear nuevo producto
@@ -189,25 +201,33 @@ public class ProductoController {
     // GET: Buscar productos
     @GetMapping("/buscar")
     @Operation(summary = "Buscar productos por nombre", description = "Busca productos que coincidan con el término")
-    public ResponseEntity<List<Producto>> buscarProductos(@RequestParam(required = false) String nombre) {
+    public ResponseEntity<List<ProductoResponseDTO>> buscarProductos(@RequestParam(required = false) String nombre) {
+        List<Producto> productos;
         if (nombre == null || nombre.trim().isEmpty()) {
-            return ResponseEntity.ok(productoService.traerTodo());
+            productos = productoService.traerTodo();
+        } else {
+            productos = productoService.buscarPorNombre(nombre.trim());
         }
-        return ResponseEntity.ok(productoService.buscarPorNombre(nombre.trim()));
+        List<ProductoResponseDTO> productosDTO = productoMapper.toDTOList(productos);
+        return ResponseEntity.ok(productosDTO);
     }
 
     // GET: Filtrar por categoría
     @GetMapping("/categoria/{categoria}")
     @Operation(summary = "Productos por categoría", description = "Obtiene productos de una categoría específica")
-    public ResponseEntity<List<Producto>> productosPorCategoria(@PathVariable String categoria) {
-        return ResponseEntity.ok(productoService.obtenerPorCategoria(categoria));
+    public ResponseEntity<List<ProductoResponseDTO>> productosPorCategoria(@PathVariable String categoria) {
+        List<Producto> productos = productoService.obtenerPorCategoria(categoria);
+        List<ProductoResponseDTO> productosDTO = productoMapper.toDTOList(productos);
+        return ResponseEntity.ok(productosDTO);
     }
 
     // GET: Productos disponibles
     @GetMapping("/disponibles")
     @Operation(summary = "Productos disponibles", description = "Solo productos con stock y disponibles")
-    public ResponseEntity<List<Producto>> productosDisponibles() {
-        return ResponseEntity.ok(productoService.obtenerDisponibles());
+    public ResponseEntity<List<ProductoResponseDTO>> productosDisponibles() {
+        List<Producto> productos = productoService.obtenerDisponibles();
+        List<ProductoResponseDTO> productosDTO = productoMapper.toDTOList(productos);
+        return ResponseEntity.ok(productosDTO);
     }
 
     // POST: Filtrar productos con paginación

@@ -123,6 +123,13 @@ public interface UsuarioService {
     boolean existeUsuarioConCorreo(String correo);
 
     /**
+     * Verifica si un RUN ya está en uso
+     * @param runUsuario RUN a verificar
+     * @return true si está en uso, false si no
+     */
+    boolean existeUsuarioConRun(String runUsuario);
+
+    /**
      * Verifica si un código de referido ya está en uso
      * @param codigoReferido Código a verificar
      * @return true si está en uso, false si no
@@ -170,6 +177,14 @@ public interface UsuarioService {
      * @return Mapa con estadísticas
      */
     java.util.Map<String, Object> obtenerEstadisticasUsuarios();
+
+    /**
+     * Valida credenciales de usuario (correo y contraseña)
+     * @param correoUsuario Correo del usuario
+     * @param password Contraseña del usuario
+     * @return Respuesta de validación con información del usuario si es válido
+     */
+    com.ampuero.msvc.usuario.dtos.CredentialsValidationResponseDTO validarCredenciales(String correoUsuario, String password);
 
     // Perfil y direcciones para frontend
     UsuarioResponseDTO getCurrentUserProfile(Long userId);

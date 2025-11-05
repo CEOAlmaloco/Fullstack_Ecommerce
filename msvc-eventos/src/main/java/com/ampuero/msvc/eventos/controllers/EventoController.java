@@ -7,11 +7,18 @@ import com.ampuero.msvc.eventos.models.Evento;
 import com.ampuero.msvc.eventos.services.EventoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import jakarta.servlet.http.HttpServletRequest;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -21,6 +28,9 @@ public class EventoController {
 
     @Autowired
     private EventoService eventoService;
+    
+    @Value("${jwt.secret:levelUpGamerSecretKey2024}")
+    private String jwtSecret;
 
     /**
      * Crear nuevo evento
@@ -53,6 +63,23 @@ public class EventoController {
     @GetMapping("/futuros")
     public ResponseEntity<List<EventoResponseDTO>> traerEventosFuturos() {
         List<Evento> eventos = eventoService.traerEventosFuturos();
+        List<EventoResponseDTO> response = eventos.stream()
+                .map(this::convertirAResponseDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * Obtener eventos próximos (compatibilidad con Kotlin)
+     * GET: /eventos/proximos
+     */
+    @GetMapping("/proximos")
+    public ResponseEntity<List<EventoResponseDTO>> traerEventosProximos(@RequestParam(required = false, defaultValue = "6") Integer limit) {
+        List<Evento> eventos = eventoService.traerEventosFuturos();
+        // Limitar resultados si se especifica
+        if (limit != null && limit > 0 && eventos.size() > limit) {
+            eventos = eventos.subList(0, limit);
+        }
         List<EventoResponseDTO> response = eventos.stream()
                 .map(this::convertirAResponseDTO)
                 .collect(Collectors.toList());
@@ -154,6 +181,38 @@ public class EventoController {
         EventoResponseDTO response = convertirAResponseDTO(evento);
         return ResponseEntity.ok(response);
     }
+    
+    /**
+     * Inscribirse en evento (compatibilidad con Kotlin)
+     * POST: /eventos/{id}/inscribir
+     */
+    @PostMapping("/{id}/inscribir")
+    public ResponseEntity<Map<String, Object>> inscribirseEvento(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
+            jakarta.servlet.http.HttpServletRequest request) {
+        // Si no se proporciona X-User-Id, intentar extraer del token JWT
+        if (userId == null) {
+            userId = extractUserIdFromToken(request);
+        }
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        Evento evento = eventoService.registrarParticipacion(id, userId);
+        EventoResponseDTO response = convertirAResponseDTO(evento);
+        
+        // Crear respuesta compatible con Kotlin
+        Map<String, Object> inscripcion = new java.util.HashMap<>();
+        inscripcion.put("id", evento.getIdEvento().toString());
+        inscripcion.put("eventoId", evento.getIdEvento().toString());
+        inscripcion.put("usuarioId", userId.toString());
+        inscripcion.put("fechaInscripcion", java.time.LocalDateTime.now().toString());
+        inscripcion.put("estado", "INSCRITO");
+        inscripcion.put("puntosGanados", evento.getPuntosLevelUp());
+        
+        return ResponseEntity.ok(inscripcion);
+    }
 
     /**
      * Cancelar participación en evento
@@ -165,6 +224,53 @@ public class EventoController {
         Evento evento = eventoService.cancelarParticipacion(id, usuarioId);
         EventoResponseDTO response = convertirAResponseDTO(evento);
         return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * Cancelar inscripción (compatibilidad con Kotlin)
+     * DELETE: /eventos/{id}/cancelar
+     */
+    @DeleteMapping("/{id}/cancelar")
+    public ResponseEntity<Void> cancelarInscripcion(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
+            jakarta.servlet.http.HttpServletRequest request) {
+        // Si no se proporciona X-User-Id, intentar extraer del token JWT
+        if (userId == null) {
+            userId = extractUserIdFromToken(request);
+        }
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        eventoService.cancelarParticipacion(id, userId);
+        return ResponseEntity.noContent().build();
+    }
+    
+    /**
+     * Obtener mis inscripciones (compatibilidad con Kotlin)
+     * GET: /eventos/mis-inscripciones
+     */
+    @GetMapping("/mis-inscripciones")
+    public ResponseEntity<List<Map<String, Object>>> getMisInscripciones(
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
+            jakarta.servlet.http.HttpServletRequest request) {
+        // Si no se proporciona X-User-Id, intentar extraer del token JWT
+        if (userId == null) {
+            userId = extractUserIdFromToken(request);
+        }
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        // Obtener todos los eventos y filtrar por inscripciones del usuario
+        List<Evento> todosEventos = eventoService.traerTodos();
+        List<Map<String, Object>> inscripciones = new java.util.ArrayList<>();
+        
+        // Por ahora, retornar lista vacía - se debe implementar la lógica de inscripciones
+        // TODO: Implementar servicio de inscripciones para obtener las inscripciones del usuario
+        
+        return ResponseEntity.ok(inscripciones);
     }
 
     /**
@@ -226,5 +332,48 @@ public class EventoController {
         response.setImagen(evento.getImagen());
         response.setImagenes(evento.getImagenes());
         return response;
+    }
+    
+    // ========== MÉTODOS PRIVADOS ==========
+    
+    /**
+     * Extrae el userId del token JWT del header Authorization
+     */
+    private Long extractUserIdFromToken(HttpServletRequest request) {
+        try {
+            String bearerToken = request.getHeader("Authorization");
+            if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+                return null;
+            }
+            
+            String token = bearerToken.substring(7);
+            
+            // Usar la misma clave secreta que el servicio de autenticación
+            SecretKey signingKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+            
+            Claims claims = Jwts.parser()
+                    .verifyWith(signingKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            
+            // El userId está en el claim "sub" o "userId"
+            Object userIdObj = claims.get("userId");
+            if (userIdObj == null) {
+                userIdObj = claims.getSubject();
+            }
+            
+            if (userIdObj instanceof Long) {
+                return (Long) userIdObj;
+            } else if (userIdObj instanceof Integer) {
+                return ((Integer) userIdObj).longValue();
+            } else if (userIdObj instanceof String) {
+                return Long.parseLong((String) userIdObj);
+            }
+            
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

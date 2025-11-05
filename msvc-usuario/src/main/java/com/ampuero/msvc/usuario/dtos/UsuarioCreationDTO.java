@@ -49,6 +49,12 @@ public class UsuarioCreationDTO {
     private String pais;
 
     private String codigoPostal;
+    
+    private String region;
+    
+    private String comuna;
+    
+    private String runUsuario;
 
     private Usuario.TipoUsuario tipoUsuario = Usuario.TipoUsuario.CLIENTE;
 

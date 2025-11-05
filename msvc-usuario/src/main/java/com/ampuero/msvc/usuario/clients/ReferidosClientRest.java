@@ -2,9 +2,12 @@ package com.ampuero.msvc.usuario.clients;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,6 +16,14 @@ import java.util.Map;
  */
 @FeignClient(name = "msvc-referidos", url = "localhost:8005")
 public interface ReferidosClientRest {
+
+    /**
+     * Obtiene los referidos de un usuario
+     * @param usuarioId ID del usuario
+     * @return Lista de referidos como Map
+     */
+    @GetMapping("/referidos/usuario/{usuarioId}/referidos")
+    List<Map<String, Object>> getReferidosPorUsuario(@PathVariable Long usuarioId);
 
     /**
      * Registra una nueva referencia

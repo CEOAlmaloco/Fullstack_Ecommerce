@@ -29,7 +29,7 @@ public class AuthServiceImpl implements AuthService {
     private AuthRepository authRepository;
     @Autowired
     private UsuarioClientRest usuarioClient;
-    @Value("${jwt.secret:levelUpGamerSecretKey2024}")
+    @Value("${jwt.secret:levelUpGamerSecretKey2024SecureForJWT256BitsMinimum}")
     private String jwtSecret;
     @Value("${jwt.access.expiration:1800}") // 30 minutos
     private Long accessTokenExpiration;
@@ -37,7 +37,26 @@ public class AuthServiceImpl implements AuthService {
     private Long refreshTokenExpiration;
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        // Asegurar que la clave tenga al menos 256 bits (32 bytes) para JWT
+        byte[] keyBytes = jwtSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        
+        // Si la clave es menor a 32 bytes, extenderla usando SHA-256
+        if (keyBytes.length < 32) {
+            try {
+                java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+                keyBytes = digest.digest(keyBytes);
+            } catch (java.security.NoSuchAlgorithmException e) {
+                log.error("Error al generar clave SHA-256: ", e);
+                // Si falla, repetir la clave hasta tener 32 bytes
+                byte[] extendedKey = new byte[32];
+                for (int i = 0; i < 32; i++) {
+                    extendedKey[i] = keyBytes[i % keyBytes.length];
+                }
+                keyBytes = extendedKey;
+            }
+        }
+        
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 
     // ========== AUTENTICACIÓN ==========
@@ -55,8 +74,24 @@ public class AuthServiceImpl implements AuthService {
             // Llamada a msvc-usuario para validar
             var validationResponse = usuarioClient.validarCredenciales(credentialsRequest);
 
+            log.info("Respuesta de validación: valid={}, userId={}, tipoUsuario={}, nombreUsuario={}", 
+                    validationResponse.isValid(), 
+                    validationResponse.getUserId(), 
+                    validationResponse.getTipoUsuario(),
+                    validationResponse.getNombreUsuario());
+
             if (!validationResponse.isValid()) {
                 throw new AuthException("Credenciales inválidas: " + validationResponse.getMensaje());
+            }
+
+            // Validar que la respuesta tenga todos los datos necesarios
+            if (validationResponse.getUserId() == null) {
+                log.error("Error: userId es null en la respuesta de validación");
+                throw new AuthException("Error: userId no disponible en la respuesta de validación");
+            }
+            if (validationResponse.getTipoUsuario() == null || validationResponse.getTipoUsuario().isEmpty()) {
+                log.error("Error: tipoUsuario es null o vacío en la respuesta de validación. Valor: '{}'", validationResponse.getTipoUsuario());
+                throw new AuthException("Error: tipoUsuario no disponible en la respuesta de validación");
             }
 
             // Generar tokens JWT
@@ -81,9 +116,14 @@ public class AuthServiceImpl implements AuthService {
 
             return new AuthResponseDTO(accessToken, refreshToken, accessTokenExpiration, usuarioInfo);
 
+        } catch (AuthException e) {
+            // Re-lanzar excepciones de autenticación sin modificar
+            throw e;
         } catch (Exception e) {
             log.error("Error en login: ", e);
-            throw new AuthException("Error interno en autenticación");
+            log.error("Mensaje de error: {}", e.getMessage());
+            log.error("Causa: ", e.getCause());
+            throw new AuthException("Error interno en autenticación: " + e.getMessage());
         }
     }
 
@@ -91,8 +131,32 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponseDTO register(RegisterRequestDTO registerRequest, String ipCliente, String userAgent) {
         try {
+            // Convertir RegisterRequestDTO a Map para enviar a msvc-usuario
+            // Nota: UsuarioClientRest usa Object, así que enviamos un Map
+            java.util.Map<String, Object> usuarioData = new java.util.HashMap<>();
+            usuarioData.put("nombre", registerRequest.getNombreUsuario());
+            usuarioData.put("apellido", registerRequest.getApellidosUsuario());
+            usuarioData.put("correo", registerRequest.getCorreoUsuario());
+            usuarioData.put("password", registerRequest.getPassword());
+            usuarioData.put("runUsuario", registerRequest.getRunUsuario());
+            usuarioData.put("region", registerRequest.getRegion());
+            usuarioData.put("comuna", registerRequest.getComuna());
+            usuarioData.put("direccion", registerRequest.getDireccionUsuario() != null ? registerRequest.getDireccionUsuario() : "");
+            usuarioData.put("ciudad", registerRequest.getComuna()); // Usar comuna como ciudad
+            usuarioData.put("aceptaTerminos", true); // Se asume que se aceptaron porque pasó la validación
+            
+            // Parsear fecha de nacimiento
+            if (registerRequest.getFechaNacimiento() != null && !registerRequest.getFechaNacimiento().isEmpty()) {
+                try {
+                    java.time.LocalDate fechaNac = java.time.LocalDate.parse(registerRequest.getFechaNacimiento());
+                    usuarioData.put("fechaNacimiento", fechaNac.toString());
+                } catch (Exception e) {
+                    log.warn("Error parseando fecha de nacimiento: {}", registerRequest.getFechaNacimiento());
+                }
+            }
+
             // Registrar usuario en msvc-usuario
-            usuarioClient.registrarUsuario(registerRequest);
+            usuarioClient.registrarUsuario(usuarioData);
 
             // Auto-login después del registro
             LoginRequestDTO loginRequest = new LoginRequestDTO();
@@ -103,7 +167,7 @@ public class AuthServiceImpl implements AuthService {
 
         } catch (Exception e) {
             log.error("Error en registro: ", e);
-            throw new AuthException("Error en registro de usuario");
+            throw new AuthException("Error en registro de usuario: " + e.getMessage());
         }
     }
 

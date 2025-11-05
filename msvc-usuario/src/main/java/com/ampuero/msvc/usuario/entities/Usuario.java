@@ -42,6 +42,9 @@ public class Usuario {
     @NotBlank(message = "El correo es obligatorio")
     @Column(name = "correo", nullable = false, unique = true, length = 100)
     private String correo;
+    
+    @Column(name = "run_usuario", length = 12, unique = true)
+    private String runUsuario;
 
     @NotBlank(message = "La contraseña es obligatoria")
     @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")

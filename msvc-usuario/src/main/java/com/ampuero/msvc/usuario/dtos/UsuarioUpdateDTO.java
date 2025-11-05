@@ -45,6 +45,15 @@ public class UsuarioUpdateDTO {
     private String codigoPostal;
 
     private String avatarUrl;
+    
+    // Campo adicional para compatibilidad con Kotlin (avatar)
+    public String getAvatar() {
+        return avatarUrl;
+    }
+    
+    public void setAvatar(String avatar) {
+        this.avatarUrl = avatar;
+    }
 
     private Usuario.TipoUsuario tipoUsuario;
 

@@ -13,13 +13,19 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import jakarta.servlet.http.HttpServletRequest;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.List;
 import com.ampuero.msvc.usuario.entities.DireccionUsuario;
@@ -38,6 +44,10 @@ import com.ampuero.msvc.usuario.dtos.DireccionUsuarioResponseDTO;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final com.ampuero.msvc.usuario.clients.ReferidosClientRest referidosClient;
+    
+    @Value("${jwt.secret:levelUpGamerSecretKey2024}")
+    private String jwtSecret;
 
     /**
      * Crea un nuevo usuario
@@ -55,6 +65,23 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioCreado);
     }
 
+    /**
+     * Valida credenciales de usuario (usado por msvc-auth)
+     */
+    @PostMapping("/validate-credentials")
+    @Operation(summary = "Validar credenciales", description = "Valida correo y contraseña de un usuario")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Credenciales validadas"),
+            @ApiResponse(responseCode = "400", description = "Datos de entrada inválidos")
+    })
+    public ResponseEntity<com.ampuero.msvc.usuario.dtos.CredentialsValidationResponseDTO> validarCredenciales(
+            @RequestBody com.ampuero.msvc.usuario.dtos.CredentialsValidationDTO credentialsDTO) {
+        log.info("Validando credenciales para correo: {}", credentialsDTO.getCorreoUsuario());
+        com.ampuero.msvc.usuario.dtos.CredentialsValidationResponseDTO response = 
+                usuarioService.validarCredenciales(credentialsDTO.getCorreoUsuario(), credentialsDTO.getPassword());
+        return ResponseEntity.ok(response);
+    }
+
     // ===== Endpoints de perfil y direcciones (deben ir ANTES de /{id}) =====
     @GetMapping("/perfil")
     @Operation(summary = "Obtener perfil del usuario", description = "Obtiene el perfil del usuario autenticado")
@@ -62,37 +89,83 @@ public class UsuarioController {
             @ApiResponse(responseCode = "200", description = "Perfil obtenido exitosamente"),
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
-    public ResponseEntity<UsuarioResponseDTO> getPerfil(@RequestHeader("X-User-Id") Long userId) {
+    public ResponseEntity<UsuarioResponseDTO> getPerfil(
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
+            HttpServletRequest request) {
+        // Si no se proporciona X-User-Id, intentar extraer del token JWT
+        if (userId == null) {
+            userId = extractUserIdFromToken(request);
+        }
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         log.info("Obteniendo perfil del usuario: {}", userId);
         return ResponseEntity.ok(usuarioService.getCurrentUserProfile(userId));
     }
 
     @PutMapping("/perfil")
     @Operation(summary = "Actualizar perfil del usuario", description = "Actualiza el perfil del usuario autenticado")
-    public ResponseEntity<UsuarioResponseDTO> updatePerfil(@RequestHeader("X-User-Id") Long userId,
-                                                           @Valid @RequestBody UsuarioUpdateDTO request) {
+    public ResponseEntity<UsuarioResponseDTO> updatePerfil(
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
+            @Valid @RequestBody UsuarioUpdateDTO request,
+            HttpServletRequest httpRequest) {
+        // Si no se proporciona X-User-Id, intentar extraer del token JWT
+        if (userId == null) {
+            userId = extractUserIdFromToken(httpRequest);
+        }
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         log.info("Actualizando perfil del usuario: {}", userId);
         return ResponseEntity.ok(usuarioService.updateProfile(userId, request));
     }
 
     @GetMapping("/direcciones")
     @Operation(summary = "Obtener direcciones del usuario", description = "Obtiene las direcciones del usuario autenticado")
-    public ResponseEntity<List<DireccionUsuarioResponseDTO>> getDirecciones(@RequestHeader("X-User-Id") Long userId) {
+    public ResponseEntity<List<DireccionUsuarioResponseDTO>> getDirecciones(
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
+            HttpServletRequest request) {
+        // Si no se proporciona X-User-Id, intentar extraer del token JWT
+        if (userId == null) {
+            userId = extractUserIdFromToken(request);
+        }
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         log.info("Obteniendo direcciones del usuario: {}", userId);
         return ResponseEntity.ok(usuarioService.getUserAddresses(userId));
     }
 
     @PostMapping("/direcciones")
     @Operation(summary = "Agregar dirección al usuario", description = "Agrega una nueva dirección al usuario autenticado")
-    public ResponseEntity<DireccionUsuarioResponseDTO> addDireccion(@RequestHeader("X-User-Id") Long userId,
-                                                                     @Valid @RequestBody DireccionUsuario direccion) {
+    public ResponseEntity<DireccionUsuarioResponseDTO> addDireccion(
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
+            @Valid @RequestBody DireccionUsuario direccion,
+            HttpServletRequest request) {
+        // Si no se proporciona X-User-Id, intentar extraer del token JWT
+        if (userId == null) {
+            userId = extractUserIdFromToken(request);
+        }
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         log.info("Agregando dirección al usuario: {}", userId);
         return new ResponseEntity<>(usuarioService.addAddress(userId, direccion), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/direcciones/{id}")
     @Operation(summary = "Eliminar dirección del usuario", description = "Elimina una dirección del usuario autenticado")
-    public ResponseEntity<Void> deleteDireccion(@RequestHeader("X-User-Id") Long userId, @PathVariable Long id) {
+    public ResponseEntity<Void> deleteDireccion(
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
+            @PathVariable Long id,
+            HttpServletRequest request) {
+        // Si no se proporciona X-User-Id, intentar extraer del token JWT
+        if (userId == null) {
+            userId = extractUserIdFromToken(request);
+        }
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         log.info("Eliminando dirección {} del usuario: {}", id, userId);
         usuarioService.deleteAddress(userId, id);
         return ResponseEntity.noContent().build();
@@ -223,6 +296,36 @@ public class UsuarioController {
         log.info("Obteniendo usuarios referidos por: {}", codigoReferido);
         Page<UsuarioResponseDTO> usuarios = usuarioService.obtenerUsuariosReferidos(codigoReferido, pageable);
         return ResponseEntity.ok(usuarios);
+    }
+    
+    /**
+     * Obtiene los referidos del usuario actual (compatibilidad con Kotlin)
+     */
+    @GetMapping("/referidos")
+    @Operation(summary = "Obtener referidos del usuario", description = "Obtiene los usuarios referidos por el usuario autenticado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de referidos obtenida exitosamente")
+    })
+    public ResponseEntity<List<Map<String, Object>>> getReferidos(
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
+            HttpServletRequest request) {
+        // Si no se proporciona X-User-Id, intentar extraer del token JWT
+        if (userId == null) {
+            userId = extractUserIdFromToken(request);
+        }
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        log.info("Obteniendo referidos del usuario: {}", userId);
+        // Llamar al servicio de referidos
+        try {
+            // Usar FeignClient para llamar a msvc-referidos
+            List<Map<String, Object>> referidos = referidosClient.getReferidosPorUsuario(userId);
+            return ResponseEntity.ok(referidos);
+        } catch (Exception e) {
+            log.error("Error al obtener referidos: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     /**
@@ -387,6 +490,50 @@ public class UsuarioController {
         log.info("Verificando disponibilidad del código de referido: {}", codigoReferido);
         boolean disponible = !usuarioService.existeUsuarioConCodigoReferido(codigoReferido);
         return ResponseEntity.ok(Map.of("disponible", disponible));
+    }
+    
+    // ========== MÉTODOS PRIVADOS ==========
+    
+    /**
+     * Extrae el userId del token JWT del header Authorization
+     */
+    private Long extractUserIdFromToken(HttpServletRequest request) {
+        try {
+            String bearerToken = request.getHeader("Authorization");
+            if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+                return null;
+            }
+            
+            String token = bearerToken.substring(7);
+            
+            // Usar la misma clave secreta que el servicio de autenticación
+            SecretKey signingKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+            
+            Claims claims = Jwts.parser()
+                    .verifyWith(signingKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            
+            // El userId está en el claim "sub" o "userId"
+            Object userIdObj = claims.get("userId");
+            if (userIdObj == null) {
+                userIdObj = claims.getSubject();
+            }
+            
+            if (userIdObj instanceof Long) {
+                return (Long) userIdObj;
+            } else if (userIdObj instanceof Integer) {
+                return ((Integer) userIdObj).longValue();
+            } else if (userIdObj instanceof String) {
+                return Long.parseLong((String) userIdObj);
+            }
+            
+            return null;
+        } catch (Exception e) {
+            log.error("Error extrayendo userId del token: ", e);
+            return null;
+        }
     }
 
 }

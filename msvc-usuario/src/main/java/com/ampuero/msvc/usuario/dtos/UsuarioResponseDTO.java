@@ -18,6 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 public class UsuarioResponseDTO {
 
+    // Campos originales (compatibilidad con TypeScript)
     private Long idUsuario;
     private String nombre;
     private String apellido;
@@ -50,6 +51,52 @@ public class UsuarioResponseDTO {
     private String nombreCompleto;
     private Integer edad;
     private String nivelDescripcion;
+    
+    // Campos adicionales para compatibilidad con Kotlin
+    // id: String (alias de idUsuario)
+    public String getId() {
+        return idUsuario != null ? idUsuario.toString() : null;
+    }
+    
+    // apellidos: String (alias de apellido)
+    public String getApellidos() {
+        return apellido;
+    }
+    
+    // puntos: Int (alias de puntosLevelUp)
+    public Integer getPuntos() {
+        return puntosLevelUp;
+    }
+    
+    // role: String (alias de tipoUsuario)
+    public String getRole() {
+        return tipoUsuario != null ? tipoUsuario.name() : null;
+    }
+    
+    // avatar: String (alias de avatarUrl)
+    public String getAvatar() {
+        return avatarUrl;
+    }
+    
+    // email: String (alias de correo)
+    public String getEmail() {
+        return correo;
+    }
+    
+    // nivel: Int (conversión de nivelUsuario)
+    public Integer getNivel() {
+        return nivelUsuario != null ? nivelUsuario.ordinal() + 1 : 1;
+    }
+    
+    // createdAt: String (formato ISO de fechaRegistro)
+    public String getCreatedAt() {
+        return fechaRegistro != null ? fechaRegistro.toString() : null;
+    }
+    
+    // updatedAt: String (formato ISO de ultimoAcceso)
+    public String getUpdatedAt() {
+        return ultimoAcceso != null ? ultimoAcceso.toString() : null;
+    }
     
     /**
      * Constructor que calcula campos derivados

@@ -6,13 +6,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "msvc-usuario", url = "localhost:8082")
+@FeignClient(name = "msvc-usuario", url = "localhost:8095")
 public interface UsuarioClientRest {
 
-    @PostMapping("/usuarios/validate-credentials")
+    @PostMapping("/api/v1/usuarios/validate-credentials")
     CredentialsValidationResponse validarCredenciales(@RequestBody Object credentials);
 
-    @PostMapping("/usuarios/register")
+    @PostMapping("/api/v1/usuarios")
     Object registrarUsuario(@RequestBody Object registerRequest);
 
     @GetMapping("/usuarios/{id}")

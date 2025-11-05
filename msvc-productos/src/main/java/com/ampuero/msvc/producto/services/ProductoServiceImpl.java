@@ -39,6 +39,9 @@ public class ProductoServiceImpl implements ProductoService {
     
     @Autowired(required = false)
     private com.ampuero.msvc.producto.clients.InventarioClient inventarioClient;
+    
+    @Autowired
+    private ProductoMapper productoMapper;
 
     @Override
     public Producto crearProducto(Producto producto) {
@@ -582,10 +585,13 @@ public class ProductoServiceImpl implements ProductoService {
         log.info("PASO 7 - Paginación aplicada: inicio={}, fin={}, productosEnPagina={}", 
                 inicio, fin, productosPaginados.size());
         
+        // Convertir productos paginados a DTOs con URLs de S3
+        List<com.ampuero.msvc.producto.dtos.ProductoResponseDTO> productosDTO = productoMapper.toDTOList(productosPaginados);
+        
         // Crear respuesta paginada
         com.ampuero.msvc.producto.dtos.ProductoPaginadoResponseDTO respuesta = 
                 new com.ampuero.msvc.producto.dtos.ProductoPaginadoResponseDTO();
-        respuesta.setProductos(productosPaginados);
+        respuesta.setProductos(productosDTO);
         respuesta.setPagina(pagina);
         respuesta.setTamano(tamano);
         respuesta.setTotalElementos((long) filtrados.size());

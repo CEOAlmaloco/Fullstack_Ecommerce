@@ -86,6 +86,20 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByCodigoReferido(String codigoReferido);
 
     /**
+     * Busca un usuario por su RUN
+     * @param runUsuario RUN del usuario
+     * @return Usuario encontrado
+     */
+    Optional<Usuario> findByRunUsuario(String runUsuario);
+
+    /**
+     * Verifica si existe un usuario con el RUN dado
+     * @param runUsuario RUN a verificar
+     * @return true si existe, false si no
+     */
+    boolean existsByRunUsuario(String runUsuario);
+
+    /**
      * Busca usuarios que fueron referidos por otro usuario
      * @param referidoPor Código del usuario que refirió
      * @return Lista de usuarios referidos

@@ -49,6 +49,13 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new DuplicateResourceException("Ya existe un usuario con el correo: " + usuarioCreationDTO.getCorreo());
         }
 
+        // Verificar si el RUN ya existe (si se proporciona)
+        if (usuarioCreationDTO.getRunUsuario() != null && !usuarioCreationDTO.getRunUsuario().isEmpty()) {
+            if (existeUsuarioConRun(usuarioCreationDTO.getRunUsuario())) {
+                throw new DuplicateResourceException("Ya existe un usuario con el RUN: " + usuarioCreationDTO.getRunUsuario());
+            }
+        }
+
         // Crear el usuario
         Usuario usuario = new Usuario();
         BeanUtils.copyProperties(usuarioCreationDTO, usuario);
@@ -204,6 +211,10 @@ public class UsuarioServiceImpl implements UsuarioService {
         if (usuarioUpdateDTO.getAvatarUrl() != null) {
             usuario.setAvatarUrl(usuarioUpdateDTO.getAvatarUrl());
         }
+        // También aceptar "avatar" (compatibilidad con Kotlin)
+        if (usuarioUpdateDTO.getAvatar() != null && usuarioUpdateDTO.getAvatarUrl() == null) {
+            usuario.setAvatarUrl(usuarioUpdateDTO.getAvatar());
+        }
         if (usuarioUpdateDTO.getTipoUsuario() != null) {
             usuario.setTipoUsuario(usuarioUpdateDTO.getTipoUsuario());
         }
@@ -282,6 +293,12 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Transactional(readOnly = true)
     public boolean existeUsuarioConCorreo(String correo) {
         return usuarioRepository.existsByCorreo(correo);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existeUsuarioConRun(String runUsuario) {
+        return usuarioRepository.existsByRunUsuario(runUsuario);
     }
 
     @Override
@@ -437,5 +454,72 @@ public class UsuarioServiceImpl implements UsuarioService {
             throw new UsuarioException("No autorizado a eliminar esta dirección");
         }
         direccionUsuarioRepository.deleteById(direccionId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public com.ampuero.msvc.usuario.dtos.CredentialsValidationResponseDTO validarCredenciales(String correoUsuario, String password) {
+        log.info("Validando credenciales para correo: {}", correoUsuario);
+        
+        try {
+            // Buscar usuario por correo
+            Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
+                    .orElse(null);
+            
+            if (usuario == null) {
+                log.warn("Usuario no encontrado con correo: {}", correoUsuario);
+                return new com.ampuero.msvc.usuario.dtos.CredentialsValidationResponseDTO(
+                        false, null, null, null, null, null, null, null, null,
+                        "Credenciales inválidas"
+                );
+            }
+            
+            // Verificar estado del usuario
+            if (usuario.getEstado() != Usuario.EstadoUsuario.ACTIVO) {
+                log.warn("Usuario inactivo con correo: {}", correoUsuario);
+                // Calcular descuentoDuoc basado en el correo (si es @duoc.cl o @profesor.duoc.cl)
+                Boolean descuentoDuoc = usuario.getCorreo() != null && 
+                        (usuario.getCorreo().endsWith("@duoc.cl") || usuario.getCorreo().endsWith("@profesor.duoc.cl"));
+                return new com.ampuero.msvc.usuario.dtos.CredentialsValidationResponseDTO(
+                        false, usuario.getIdUsuario(), usuario.getNombre(), usuario.getApellido(),
+                        usuario.getCorreo(), usuario.getTipoUsuario().name(), 
+                        descuentoDuoc, usuario.getRegion(), usuario.getComuna(),
+                        "Usuario inactivo"
+                );
+            }
+            
+            // Verificar contraseña
+            if (!passwordEncoder.matches(password, usuario.getPassword())) {
+                log.warn("Contraseña incorrecta para correo: {}", correoUsuario);
+                // Calcular descuentoDuoc basado en el correo (si es @duoc.cl o @profesor.duoc.cl)
+                Boolean descuentoDuoc = usuario.getCorreo() != null && 
+                        (usuario.getCorreo().endsWith("@duoc.cl") || usuario.getCorreo().endsWith("@profesor.duoc.cl"));
+                return new com.ampuero.msvc.usuario.dtos.CredentialsValidationResponseDTO(
+                        false, usuario.getIdUsuario(), usuario.getNombre(), usuario.getApellido(),
+                        usuario.getCorreo(), usuario.getTipoUsuario().name(),
+                        descuentoDuoc, usuario.getRegion(), usuario.getComuna(),
+                        "Credenciales inválidas"
+                );
+            }
+            
+            // Credenciales válidas
+            log.info("Credenciales válidas para usuario ID: {}", usuario.getIdUsuario());
+            // Calcular descuentoDuoc basado en el correo (si es @duoc.cl o @profesor.duoc.cl)
+            Boolean descuentoDuoc = usuario.getCorreo() != null && 
+                    (usuario.getCorreo().endsWith("@duoc.cl") || usuario.getCorreo().endsWith("@profesor.duoc.cl"));
+            return new com.ampuero.msvc.usuario.dtos.CredentialsValidationResponseDTO(
+                    true, usuario.getIdUsuario(), usuario.getNombre(), usuario.getApellido(),
+                    usuario.getCorreo(), usuario.getTipoUsuario().name(),
+                    descuentoDuoc, usuario.getRegion(), usuario.getComuna(),
+                    "Credenciales válidas"
+            );
+            
+        } catch (Exception e) {
+            log.error("Error al validar credenciales: ", e);
+            return new com.ampuero.msvc.usuario.dtos.CredentialsValidationResponseDTO(
+                    false, null, null, null, null, null, null, null, null,
+                    "Error interno al validar credenciales"
+            );
+        }
     }
 }

@@ -67,4 +67,65 @@ public class ProductoResponseDTO extends RepresentationModel<ProductoResponseDTO
 
     @Schema(description = "Número de unidades disponibles en inventario", example = "25")
     private Integer stock;
+
+    @Schema(description = "URL de la imagen principal del producto (desde S3)", example = "https://bucket.s3.amazonaws.com/productos/123/imagen.jpg")
+    private String imagenUrl;
+
+    @Schema(description = "URLs de imágenes adicionales del producto (JSON array desde S3)", example = "[\"https://bucket.s3.amazonaws.com/productos/123/img1.jpg\",\"https://bucket.s3.amazonaws.com/productos/123/img2.jpg\"]")
+    private String imagenesUrls;
+
+    @Schema(description = "Referencia a S3 de la imagen principal (key guardada en BD)", example = "productos/123/imagen.jpg")
+    private String imagenS3Key;
+
+    @Schema(description = "Referencias a S3 de imágenes adicionales (JSON array de keys guardadas en BD)", example = "[\"productos/123/img1.jpg\",\"productos/123/img2.jpg\"]")
+    private String imagenesS3Keys;
+
+    @Schema(description = "Título del producto (alias de nombreProducto)", example = "Laptop Gaming Asus ROG")
+    private String titulo;
+
+    @Schema(description = "Descripción del producto (alias de descripcionProducto)", example = "Laptop para gaming con procesador Intel i7")
+    private String descripcion;
+
+    @Schema(description = "Precio del producto (alias de precioProducto)", example = "899990.99")
+    private Double precio;
+
+    @Schema(description = "ID del producto (alias de idProducto)", example = "1")
+    private Long id;
+
+    // Getters para compatibilidad con frontend
+    public String getTitulo() {
+        return titulo != null ? titulo : nombreProducto;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+        this.nombreProducto = titulo;
+    }
+
+    public String getDescripcion() {
+        return descripcion != null ? descripcion : descripcionProducto;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+        this.descripcionProducto = descripcion;
+    }
+
+    public Double getPrecio() {
+        return precio != null ? precio : precioProducto;
+    }
+
+    public void setPrecio(Double precio) {
+        this.precio = precio;
+        this.precioProducto = precio;
+    }
+
+    public Long getId() {
+        return id != null ? id : idProducto;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+        this.idProducto = id;
+    }
 } 

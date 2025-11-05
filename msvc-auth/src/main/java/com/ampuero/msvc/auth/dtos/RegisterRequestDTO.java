@@ -43,7 +43,6 @@ public class RegisterRequestDTO {
     @NotBlank(message = "La comuna es requerida")
     private String comuna;
 
-    @NotBlank(message = "La dirección es requerida")
     @Size(max = 300, message = "La dirección no puede exceder 300 caracteres")
-    private String direccionUsuario;
+    private String direccionUsuario; // Campo opcional
 }
