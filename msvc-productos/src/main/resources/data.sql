@@ -2,39 +2,47 @@
 -- Base de datos normalizada con tablas separadas para categorías y subcategorías
 -- Rutas de imágenes sin ./ inicial para que el backend las sirva correctamente
 
--- PASO 1: Insertar CATEGORÍAS (evitar duplicados)
-MERGE INTO categorias (id, nombre) KEY (id) VALUES
-('CO', 'Consola'),
-('PE', 'Perifericos'),
-('RO', 'Ropa'),
-('EN', 'Entretenimiento');
+INSERT INTO categorias (id, nombre) VALUES
+  ('CO', 'Consola'),
+  ('PE', 'Perifericos'),
+  ('RO', 'Ropa'),
+  ('EN', 'Entretenimiento')
+ON CONFLICT (id) DO UPDATE SET nombre = EXCLUDED.nombre;
 
 -- PASO 2: Insertar SUBCATEGORÍAS (con relación a categorías, evitar duplicados)
--- CONSOLAS (CO)
-MERGE INTO subcategorias (id, nombre, categoria_id) KEY (id) VALUES
-('HA', 'Hardware', 'CO'),
-('MA', 'Mandos', 'CO'),
-('AC', 'Accesorios', 'CO');
+INSERT INTO subcategorias (id, nombre, categoria_id) VALUES
+  ('HA', 'Hardware', 'CO'),
+  ('MA', 'Mandos', 'CO'),
+  ('AC', 'Accesorios', 'CO')
+ON CONFLICT (id) DO UPDATE SET
+  nombre = EXCLUDED.nombre,
+  categoria_id = EXCLUDED.categoria_id;
 
--- PERIFERICOS (PE)
-MERGE INTO subcategorias (id, nombre, categoria_id) KEY (id) VALUES
-('TE', 'Teclados', 'PE'),
-('MO', 'Mouses', 'PE'),
-('AU', 'Auriculares', 'PE'),
-('MT', 'Monitores', 'PE'),
-('MI', 'Microfonos', 'PE'),
-('CW', 'Camaras web', 'PE'),
-('MP', 'Mousepad', 'PE'),
-('SI', 'Sillas Gamers', 'PE');
+INSERT INTO subcategorias (id, nombre, categoria_id) VALUES
+  ('TE', 'Teclados', 'PE'),
+  ('MO', 'Mouses', 'PE'),
+  ('AU', 'Auriculares', 'PE'),
+  ('MT', 'Monitores', 'PE'),
+  ('MI', 'Microfonos', 'PE'),
+  ('CW', 'Camaras web', 'PE'),
+  ('MP', 'Mousepad', 'PE'),
+  ('SI', 'Sillas Gamers', 'PE')
+ON CONFLICT (id) DO UPDATE SET
+  nombre = EXCLUDED.nombre,
+  categoria_id = EXCLUDED.categoria_id;
 
--- ROPA (RO)
-MERGE INTO subcategorias (id, nombre, categoria_id) KEY (id) VALUES
-('PG', 'Polerones Gamers Personalizados', 'RO'),
-('PR', 'Poleras Personalizadas', 'RO');
+INSERT INTO subcategorias (id, nombre, categoria_id) VALUES
+  ('PG', 'Polerones Gamers Personalizados', 'RO'),
+  ('PR', 'Poleras Personalizadas', 'RO')
+ON CONFLICT (id) DO UPDATE SET
+  nombre = EXCLUDED.nombre,
+  categoria_id = EXCLUDED.categoria_id;
 
--- ENTRETENIMIENTO (EN)
-MERGE INTO subcategorias (id, nombre, categoria_id) KEY (id) VALUES
-('JM', 'Juegos de Mesa', 'EN');
+INSERT INTO subcategorias (id, nombre, categoria_id) VALUES
+  ('JM', 'Juegos de Mesa', 'EN')
+ON CONFLICT (id) DO UPDATE SET
+  nombre = EXCLUDED.nombre,
+  categoria_id = EXCLUDED.categoria_id;
 
 -- PASO 3: Insertar PRODUCTOS (con relaciones a categorías y subcategorías, evitar duplicados)
 -- NOTA: Las imágenes se insertan como rutas aquí, pero el inicializador ProductoDataInitializerFromSQL
