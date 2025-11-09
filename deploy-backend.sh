@@ -16,7 +16,7 @@ BASE_DIR="/home/ec2-user/Backend_Java_Spring/Fullstack_Ecommerce"
 
 # Microservicios a desplegar
 SERVICES=(
-    "msvc-gateway:8080"
+    "msvc-gateway:8094"
     "msvc-auth:8001"
     "msvc-usuario:8095"
     "msvc-productos:8003"
@@ -65,7 +65,8 @@ Environment="DB_PASSWORD=${DB_PASSWORD}"
 Environment="DB_DRIVER=org.postgresql.Driver"
 Environment="JWT_SECRET=${JWT_SECRET}"
 Environment="PRODUCTOS_URL=http://localhost:8003/api/v1"
-ExecStart=/usr/bin/java -jar target/*.jar
+Environment="JAVA_OPTS=-Xms256m -Xmx512m"
+ExecStart=/usr/bin/java \$JAVA_OPTS -jar target/*.jar
 Restart=always
 RestartSec=10
 

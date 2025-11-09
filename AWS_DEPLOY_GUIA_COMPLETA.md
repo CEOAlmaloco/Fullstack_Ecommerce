@@ -353,18 +353,19 @@
 
 ## 5. Crear instancia EC2 para Backend (t3.micro)
 
-### Paso 5.1: Crear Key Pair
+### Paso 5.1: Crear Key Pair como .ppk para PuTTY
 1. En **EC2 Dashboard**, ve a **"Key Pairs"** en el menú izquierdo
 2. Click en **"Create key pair"**
 3. Configuración:
    - **Name**: `levelup-backend-key`
    - **Key pair type**: **RSA**
-   - **Private key file format**: **.pem** (para Linux/Mac) o **.ppk** (para Windows/PuTTY)
+   - **Private key file format**: **.ppk** (para PuTTY en Windows)
 4. Click en **"Create key pair"**
-5. **⚠️ IMPORTANTE**: Se descargará automáticamente el archivo `.pem`
-   - **Guárdalo en un lugar seguro** (ej: `C:\Users\alm\Desktop\levelup-backend-key.pem`)
+5. **⚠️ IMPORTANTE**: Se descargará automáticamente el archivo `.ppk`
+   - **Guárdalo en un lugar seguro** (ej: `C:\Users\alm\Desktop\levelup-backend-key.ppk`)
    - **No lo subas al repositorio**
    - Si lo pierdes, no podrás conectarte a la instancia
+   - Este archivo `.ppk` es el que usarás con PuTTY
 
 ### Paso 5.2: Crear instancia EC2
 1. En **EC2 Dashboard**, click en **"Instances"** → **"Launch instance"**
@@ -430,36 +431,74 @@
 
 ## 6. Configurar EC2 Backend
 
-### Paso 6.1: Conectarse a EC2 via SSH
+### Paso 6.1: Descargar e instalar PuTTY
 
-**En Windows (PowerShell o CMD):**
-```powershell
-# Navega a la carpeta donde está tu key
-cd C:\Users\alm\Desktop
+1. Descarga PuTTY desde: [https://www.putty.org/](https://www.putty.org/)
+2. Click en **"Download PuTTY"**
+3. Descarga la versión para Windows (ej: `putty-64bit-0.78-installer.msi`)
+4. Ejecuta el instalador
+5. Instala PuTTY (incluye PuTTYgen, PSCP, PSFTP)
+6. Click en **"Finish"** cuando termine la instalación
 
-# Cambia permisos de la key (primera vez)
-icacls levelup-backend-key.pem /inheritance:r
-icacls levelup-backend-key.pem /grant:r "%USERNAME%:R"
+### Paso 6.2: Conectarse a EC2 usando PuTTY
 
-# Conectarse (reemplaza con tu IP pública o Elastic IP)
-ssh -i levelup-backend-key.pem ec2-user@54.123.45.67
-```
+**Nota**: Si ya descargaste el Key Pair como `.ppk` en el Paso 5.1, usa ese archivo directamente.
 
-**En Linux/Mac:**
-```bash
-# Cambia permisos de la key (primera vez)
-chmod 400 levelup-backend-key.pem
+1. Abre **PuTTY** (búscalo en el menú de inicio de Windows)
 
-# Conectarse
-ssh -i levelup-backend-key.pem ec2-user@54.123.45.67
-```
+2. **Configuración de conexión:**
+   - **Host Name (or IP address)**: Ingresa solo la IP (sin usuario)
+     - Ejemplo: `54.123.45.67` (tu IP pública o Elastic IP)
+     - **NO escribas** `ec2-user@` aquí
+   - **Port**: `22`
+   - **Connection type**: **SSH**
 
-**Si usas Ubuntu AMI, el usuario es `ubuntu` en lugar de `ec2-user`:**
-```bash
-ssh -i levelup-backend-key.pem ubuntu@54.123.45.67
-```
+3. **Configurar Key Pair (autenticación):**
+   - En el panel izquierdo, expande **"SSH"**
+   - Click en **"Auth"** (en SSH)
+   - Click en **"Credentials"** (en Auth)
+   - En **"Private key file for authentication"**, click en **"Browse"**
+   - Navega a donde guardaste tu archivo `.ppk` (ej: `C:\Users\alm\Desktop\levelup-backend-key.ppk`)
+   - Selecciona el archivo `.ppk`
+   - Click en **"Open"**
+   - Verás la ruta del archivo en el campo
 
-### Paso 6.2: Actualizar sistema e instalar dependencias
+4. **Configurar usuario (opcional pero recomendado):**
+   - En el panel izquierdo, expande **"SSH"** → **"Auth"**
+   - En **"Username"**, escribe:
+     - `ec2-user` (para Amazon Linux)
+     - `ubuntu` (para Ubuntu AMI)
+
+5. **Guardar configuración (recomendado):**
+   - En el panel izquierdo, click en **"Session"** (arriba del todo)
+   - **Saved Sessions**: Escribe `levelup-backend`
+   - Click en **"Save"**
+   - La próxima vez, solo selecciona `levelup-backend` y click en **"Load"**
+
+6. **Conectarse:**
+   - Verifica que la configuración esté correcta
+   - Click en **"Open"** (abajo)
+
+7. **Primera conexión:**
+   - Aparecerá una ventana de advertencia: **"PuTTY Security Alert"**
+   - Dice: **"The server's host key is not cached in the registry"**
+   - Click en **"Accept"** (esto guarda la clave del servidor y no volverá a aparecer)
+
+8. **Login:**
+   - Si configuraste el usuario en el paso 4, deberías conectarte automáticamente
+   - Si no configuraste el usuario, escribe:
+     - `ec2-user` (para Amazon Linux) y presiona Enter
+     - `ubuntu` (para Ubuntu) y presiona Enter
+   - No deberías necesitar contraseña (si configuraste el key pair correctamente)
+   - Si todo está bien, verás el prompt: `[ec2-user@ip-xxx-xxx-xxx-xxx ~]$`
+
+9. **Si aparece error de autenticación:**
+   - Verifica que el archivo `.ppk` sea correcto
+   - Verifica que el usuario sea correcto (`ec2-user` o `ubuntu`)
+   - Verifica que la IP sea correcta
+   - Verifica que el Security Group permita SSH desde tu IP
+
+### Paso 6.3: Actualizar sistema e instalar dependencias
 Una vez conectado a EC2, ejecuta:
 
 **Si usas Amazon Linux 2023:**
@@ -467,8 +506,15 @@ Una vez conectado a EC2, ejecuta:
 # Actualizar sistema
 sudo yum update -y
 
-# Instalar Java 17
-sudo yum install java-17-amazon-corretto -y
+# Instalar Java 21 (Amazon Corretto - Recomendado para AWS)
+sudo yum install java-21-amazon-corretto -y
+
+# Si java-21-amazon-corretto no está disponible, instalar desde repositorio de Amazon
+# sudo yum install java-21-amazon-corretto-headless -y
+
+# Verificar instalación de Java
+java -version
+# Debería mostrar: openjdk version "21.x.x" (Amazon Corretto)
 
 # Instalar Maven
 sudo yum install maven -y
@@ -490,8 +536,12 @@ git --version
 # Actualizar sistema
 sudo apt update && sudo apt upgrade -y
 
-# Instalar Java 17
-sudo apt install openjdk-17-jdk -y
+# Instalar Java 21 (OpenJDK)
+sudo apt install openjdk-21-jdk -y
+
+# Verificar instalación de Java
+java -version
+# Debería mostrar: openjdk version "21.x.x"
 
 # Instalar Maven
 sudo apt install maven -y
@@ -508,26 +558,47 @@ mvn -version
 git --version
 ```
 
-### Paso 6.3: Subir código del backend
+### Paso 6.4: Subir código del backend
 
 **Opción A: Usar Git (Recomendado)**
 ```bash
-# En EC2
+# En EC2 (en la terminal de PuTTY)
 cd /home/ec2-user
 git clone https://github.com/tu-usuario/tu-repo.git
 cd tu-repo/Backend_Java_Spring/Fullstack_Ecommerce
 ```
 
-**Opción B: Usar SCP desde tu máquina local**
-```powershell
-# Desde tu máquina local (PowerShell)
-cd C:\Users\alm\Desktop\3REPOSITORY_GLOBAL_FULLSTACK
+**Opción B: Usar PSCP (PuTTY) desde tu máquina local**
+1. Abre **PowerShell** o **CMD** en tu máquina local
+2. Navega a la carpeta donde está tu proyecto:
+   ```powershell
+   cd C:\Users\alm\Desktop\3REPOSITORY_GLOBAL_FULLSTACK
+   ```
+3. Usa PSCP (incluido con PuTTY) para subir archivos:
+   ```powershell
+   # Formato: pscp -i [key.ppk] -r [carpeta_local] [usuario]@[IP]:[ruta_remota]
+   pscp -i levelup-backend-key.ppk -r Backend_Java_Spring\Fullstack_Ecommerce ec2-user@54.123.45.67:/home/ec2-user/
+   ```
+4. Si te pide confirmación, escribe `yes` y presiona Enter
+5. Espera a que termine la subida
 
-# Subir todo el backend
-scp -i levelup-backend-key.pem -r Backend_Java_Spring\Fullstack_Ecommerce ec2-user@54.123.45.67:/home/ec2-user/
-```
+**Opción C: Usar WinSCP (Interfaz gráfica - Recomendado para Windows)**
+1. Descarga WinSCP desde: [https://winscp.net/](https://winscp.net/)
+2. Instala WinSCP
+3. Abre WinSCP
+4. Configuración:
+   - **File protocol**: **SFTP**
+   - **Host name**: Tu IP pública (ej: `54.123.45.67`)
+   - **Port number**: `22`
+   - **User name**: `ec2-user` (o `ubuntu`)
+   - **Password**: Déjalo vacío (usaremos key pair)
+   - Click en **"Advanced"** → **"SSH"** → **"Authentication"**
+   - En **"Private key file"**, selecciona tu archivo `.ppk`
+   - Click en **"OK"**
+5. Click en **"Login"**
+6. Arrastra y suelta la carpeta `Backend_Java_Spring\Fullstack_Ecommerce` a `/home/ec2-user/`
 
-### Paso 6.4: Configurar variables de entorno
+### Paso 6.5: Configurar variables de entorno
 ```bash
 # En EC2, crear archivo de configuración
 cd /home/ec2-user/Backend_Java_Spring/Fullstack_Ecommerce
@@ -550,48 +621,163 @@ AWS_REGION=us-east-1
 source /etc/environment
 ```
 
-### Paso 6.5: Compilar microservicios
+### Paso 6.6: Compilar microservicios
 ```bash
-# Ir al directorio del proyecto
-cd /home/ec2-user/Backend_Java_Spring/Fullstack_Ecommerce
+# Ir al directorio principal del backend
+cd /home/ec2-user/levelup/Backend_Java_Spring/Fullstack_Ecommerce
 
-# Compilar cada microservicio
-cd msvc-auth
-mvn clean package -DskipTests
-cd ../msvc-usuario
-mvn clean package -DskipTests
-cd ../msvc-productos
-mvn clean package -DskipTests
-# ... repetir para cada microservicio
+# Compilar cada microservicio con el wrapper de Maven
+for service in \
+  msvc-gateway \
+  msvc-auth \
+  msvc-usuario \
+  msvc-productos \
+  msvc-inventario \
+  msvc-referidos \
+  msvc-notificaciones \
+  msvc-carrito \
+  msvc-resenia \
+  msvc-pagos \
+  msvc-pedido \
+  msvc-promociones \
+  msvc-eventos \
+  msvc-contenido
+do
+  echo "Compilando $service..."
+  cd "$service"
+  ./mvnw clean package -DskipTests
+  cd ..
+done
 ```
 
-### Paso 6.6: Crear scripts de inicio
+### Paso 6.7: Crear script de inicio seguro
 ```bash
-# Crear script para iniciar todos los servicios
-cd /home/ec2-user/Backend_Java_Spring/Fullstack_Ecommerce
-nano start-all-services.sh
+# Crear el script de arranque
+cd /home/ec2-user/levelup/Backend_Java_Spring/Fullstack_Ecommerce
+nano start.sh
 
 # Contenido del script:
 #!/bin/bash
+
+export JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto.x86_64
+export PATH=$JAVA_HOME/bin:$PATH
 export SPRING_PROFILES_ACTIVE=prod
-export DB_HOST=levelup-db.xxxxx.us-east-1.rds.amazonaws.com
+
+export DB_HOST=levelup-db.cvcqjuf3hjcs.us-east-1.rds.amazonaws.com
+export DB_PORT=5432
 export DB_USERNAME=levelup_admin
-export DB_PASSWORD=tu_password
+export DB_PASSWORD='$Hola1234'
+export DB_DRIVER=org.postgresql.Driver
+
 export JWT_SECRET=levelUpGamerSecretKey2024SecureForJWT256BitsMinimum
+export CORS_ORIGINS=http://54.161.72.45:5173,http://54.161.72.45:80,https://ec2-54-161-72-45.compute.amazonaws.com
 
-# Iniciar Gateway
-cd msvc-gateway && nohup java -jar target/*.jar > gateway.log 2>&1 &
-cd ..
+export S3_BUCKET_NAME=levelup-gamer-products
+export S3_REGION=us-east-1
+export S3_BASE_URL=https://levelup-gamer-products.s3.us-east-1.amazonaws.com
+export AWS_REGION=us-east-1
 
-# Iniciar Auth
-cd msvc-auth && nohup java -jar target/*.jar > auth.log 2>&1 &
-cd ..
+cd "$(dirname "$0")" || exit 1
+mkdir -p logs
 
-# Repetir para cada microservicio...
+echo "=========================================="
+echo "🚀 Iniciando microservicios LevelUp Gamer (modo seguro)"
+echo "=========================================="
+java -version
+echo "JAVA_HOME: $JAVA_HOME"
+echo "SPRING_PROFILES_ACTIVE: $SPRING_PROFILES_ACTIVE"
+echo "=========================================="
 
-# Guardar: Ctrl+O, Enter, Ctrl+X
-# Dar permisos de ejecución
-chmod +x start-all-services.sh
+start_service() {
+  local SERVICE_NAME=$1
+  local SERVICE_DIR=$2
+  local PORT=$3
+  local LOG_FILE="logs/${SERVICE_NAME}.log"
+
+  echo ""
+  echo "Iniciando $SERVICE_NAME en puerto $PORT..."
+
+  if [ ! -f "$SERVICE_DIR/target/"*.jar ]; then
+    echo "Compilando $SERVICE_NAME..."
+    cd "$SERVICE_DIR" || { echo "Error: no existe $SERVICE_DIR"; return 1; }
+    ./mvnw clean package -DskipTests || { echo "Fallo la compilacion de $SERVICE_NAME"; cd - >/dev/null; return 1; }
+    cd - >/dev/null
+  fi
+
+  cd "$SERVICE_DIR" || return 1
+
+  local DB_NAME="levelup_main"
+  case $SERVICE_NAME in
+    msvc-auth) DB_NAME="levelup_auth" ;;
+    msvc-usuario) DB_NAME="levelup_usuario" ;;
+    msvc-productos) DB_NAME="levelup_productos" ;;
+    msvc-carrito) DB_NAME="levelup_carrito" ;;
+    msvc-pedido) DB_NAME="levelup_pedido" ;;
+    msvc-pagos) DB_NAME="levelup_pagos" ;;
+    msvc-resenia) DB_NAME="levelup_resenia" ;;
+    msvc-referidos) DB_NAME="levelup_referidos" ;;
+    msvc-promociones) DB_NAME="levelup_promociones" ;;
+    msvc-inventario) DB_NAME="levelup_inventario" ;;
+    msvc-notificaciones) DB_NAME="levelup_notificaciones" ;;
+    msvc-eventos) DB_NAME="levelup_eventos" ;;
+    msvc-contenido) DB_NAME="levelup_contenido" ;;
+  esac
+
+  export DB_URL="jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}"
+
+  local JAVA_OPTS="-Xms256m -Xmx512m"
+  nohup nice -n 10 java $JAVA_OPTS -jar target/*.jar --server.port=$PORT > "../${LOG_FILE}" 2>&1 &
+
+  local PID=$!
+  echo "Servicio $SERVICE_NAME iniciado (PID $PID, log: $LOG_FILE)"
+
+  cd - >/dev/null || return 1
+
+  echo "Esperando a que el puerto $PORT este disponible..."
+  for i in {1..25}; do
+    if netstat -tuln | grep -q ":$PORT "; then
+      echo "$SERVICE_NAME activo en puerto $PORT"
+      break
+    fi
+    sleep 1
+  done
+
+  sleep 5
+}
+
+SERVICES=(
+  "msvc-gateway:8094"
+  "msvc-auth:8001"
+  "msvc-usuario:8095"
+  "msvc-productos:8003"
+  "msvc-inventario:8004"
+  "msvc-referidos:8005"
+  "msvc-notificaciones:8006"
+  "msvc-carrito:8008"
+  "msvc-resenia:8010"
+  "msvc-pagos:8011"
+  "msvc-pedido:8085"
+  "msvc-promociones:8091"
+  "msvc-eventos:8092"
+  "msvc-contenido:8093"
+)
+
+for entry in "${SERVICES[@]}"; do
+  IFS=":" read -r NAME PORT <<<"$entry"
+  start_service "$NAME" "$NAME" "$PORT"
+done
+
+echo ""
+echo "=========================================="
+echo "Todos los microservicios iniciados en modo seguro."
+echo "Logs disponibles en ./logs/"
+echo "=========================================="
+```
+
+Guarda el archivo (Ctrl+O, Enter, Ctrl+X) y aplica permisos de ejecución:
+
+```bash
+chmod +x start.sh
 ```
 
 ---
