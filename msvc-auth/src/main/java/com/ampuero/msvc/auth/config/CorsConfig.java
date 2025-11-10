@@ -30,13 +30,13 @@ public class CorsConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        String[] origins = parseList(corsAllowedOrigins);
-        if (origins.length == 0) {
-            origins = new String[]{"http://localhost:5173"};
+        String[] originPatterns = parseList(corsAllowedOrigins);
+        if (originPatterns.length == 0) {
+            originPatterns = new String[]{"http://localhost:5173"};
         }
 
         registry.addMapping("/**")
-                .allowedOrigins(origins)
+                .allowedOriginPatterns(originPatterns)
                 .allowedMethods(parseList(corsAllowedMethods))
                 .allowedHeaders(parseList(corsAllowedHeaders, true))
                 .exposedHeaders(parseList(corsExposedHeaders, true))
