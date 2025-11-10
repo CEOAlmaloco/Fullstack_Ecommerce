@@ -1,9 +1,16 @@
 package com.ampuero.msvc.producto.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Servicio para construir URLs de S3 a partir de referencias guardadas en BD
@@ -14,6 +21,8 @@ public class S3Service {
 
     private static final Logger logger = LoggerFactory.getLogger(S3Service.class);
 
+    private final ObjectMapper objectMapper;
+
     @Value("${s3.bucket.name:levelup-gamer-products}")
     private String bucketName;
 
@@ -22,6 +31,10 @@ public class S3Service {
 
     @Value("${s3.base.url:}")
     private String baseUrl;
+
+    public S3Service(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     /**
      * Construye la URL completa de S3 a partir de una referencia (key)
@@ -84,49 +97,34 @@ public class S3Service {
      * @return JSON array de URLs completas de S3
      */
     public String buildS3UrlsJson(String s3KeysJson) {
-        if (s3KeysJson == null || s3KeysJson.isEmpty()) {
+        if (s3KeysJson == null || s3KeysJson.isBlank()) {
             return "[]";
         }
 
         try {
-            // Parsear JSON array
-            String cleanJson = s3KeysJson.trim();
-            if (cleanJson.startsWith("[")) {
-                cleanJson = cleanJson.substring(1);
-            }
-            if (cleanJson.endsWith("]")) {
-                cleanJson = cleanJson.substring(0, cleanJson.length() - 1);
-            }
+            List<String> keys = objectMapper.readValue(
+                    s3KeysJson,
+                    new TypeReference<List<String>>() {}
+            );
 
-            // Si está vacío después de limpiar, retornar array vacío
-            if (cleanJson.trim().isEmpty()) {
+            if (keys == null || keys.isEmpty()) {
                 return "[]";
             }
 
-            // Dividir por comas
-            String[] keys = cleanJson.split(",\\s*");
-            StringBuilder jsonArray = new StringBuilder("[");
-            
-            for (int i = 0; i < keys.length; i++) {
-                String key = keys[i].trim();
-                // Remover comillas si existen
-                if (key.startsWith("\"") && key.endsWith("\"")) {
-                    key = key.substring(1, key.length() - 1);
-                }
-                
-                String url = buildS3Url(key);
-                if (url != null) {
-                    if (i > 0) {
-                        jsonArray.append(",");
-                    }
-                    jsonArray.append("\"").append(url).append("\"");
-                }
-            }
-            
-            jsonArray.append("]");
-            return jsonArray.toString();
+            List<String> urls = keys.stream()
+                    .filter(Objects::nonNull)
+                    .map(String::trim)
+                    .filter(key -> !key.isEmpty())
+                    .map(this::buildS3Url)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+            return objectMapper.writeValueAsString(urls);
+        } catch (JsonProcessingException e) {
+            logger.error("JSON inválido para claves S3 (se devolverá arreglo vacío): {}", s3KeysJson, e);
+            return "[]";
         } catch (Exception e) {
-            logger.error("Error al construir URLs de S3 desde JSON: {}", s3KeysJson, e);
+            logger.error("Error inesperado al construir URLs de S3 desde JSON: {}", s3KeysJson, e);
             return "[]";
         }
     }
