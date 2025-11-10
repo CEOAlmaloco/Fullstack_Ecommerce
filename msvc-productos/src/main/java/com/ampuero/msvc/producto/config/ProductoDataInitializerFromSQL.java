@@ -6,6 +6,7 @@ import com.ampuero.msvc.producto.services.ImageBase64Service;
 import com.ampuero.msvc.producto.services.ImagePathMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +25,9 @@ public class ProductoDataInitializerFromSQL {
 
     private static final Logger logger = LoggerFactory.getLogger(ProductoDataInitializerFromSQL.class);
 
+    @Value("${productos.autoconvert-base64:false}")
+    private boolean autoConvertBase64;
+
     /**
      * Inicializa productos convirtiendo imágenes a Base64
      * Se ejecuta después de que data.sql haya cargado las categorías y subcategorías
@@ -36,6 +40,11 @@ public class ProductoDataInitializerFromSQL {
             ImagePathMapper imagePathMapper) {
         
         return args -> {
+            if (!autoConvertBase64) {
+                logger.info("Conversión de imágenes a Base64 deshabilitada. Se conservan las rutas originales.");
+                return;
+            }
+
             logger.info("Iniciando conversión de imágenes a Base64 para productos existentes");
 
             // Obtener todos los productos
