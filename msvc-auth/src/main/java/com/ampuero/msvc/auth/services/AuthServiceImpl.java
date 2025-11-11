@@ -66,10 +66,9 @@ public class AuthServiceImpl implements AuthService {
     public AuthResponseDTO login(LoginRequestDTO loginRequest, String ipCliente, String userAgent) {
         try {
             // Validar credenciales con msvc-usuario
-            var credentialsRequest = new Object() {
-                public String correoUsuario = loginRequest.getCorreoUsuario();
-                public String password = loginRequest.getPassword();
-            };
+            java.util.Map<String, Object> credentialsRequest = new java.util.HashMap<>();
+            credentialsRequest.put("correoUsuario", loginRequest.getCorreoUsuario());
+            credentialsRequest.put("password", loginRequest.getPassword());
 
             // Llamada a msvc-usuario para validar
             var validationResponse = usuarioClient.validarCredenciales(credentialsRequest);
@@ -138,8 +137,23 @@ public class AuthServiceImpl implements AuthService {
             usuarioData.put("apellido", registerRequest.getApellidosUsuario());
             usuarioData.put("correo", registerRequest.getCorreoUsuario());
             usuarioData.put("password", registerRequest.getPassword());
-            usuarioData.put("runUsuario", registerRequest.getRunUsuario());
-            usuarioData.put("telefono", registerRequest.getTelefono());
+
+            String runUsuario = registerRequest.getRunUsuario();
+            if (runUsuario != null) {
+                runUsuario = runUsuario.trim();
+            }
+            if (runUsuario != null && !runUsuario.isEmpty()) {
+                usuarioData.put("runUsuario", runUsuario);
+            }
+
+            String telefono = registerRequest.getTelefono();
+            if (telefono != null) {
+                telefono = telefono.trim();
+                if (!telefono.isEmpty()) {
+                    usuarioData.put("telefono", telefono);
+                }
+            }
+
             usuarioData.put("region", registerRequest.getRegion());
             usuarioData.put("comuna", registerRequest.getComuna());
             usuarioData.put("direccion", registerRequest.getDireccionUsuario() != null ? registerRequest.getDireccionUsuario() : "");
@@ -291,12 +305,13 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     @Override
     public void revokeSession(Long tokenId) {
-        Optional<Auth> tokenOpt = authRepository.findById(tokenId);
-        if (tokenOpt.isPresent()) {
-            Auth token = tokenOpt.get();
+        if (tokenId == null) {
+            return;
+        }
+        authRepository.findById(tokenId).ifPresent(token -> {
             token.setActivo(false);
             authRepository.save(token);
-        }
+        });
     }
 
     // ========== LIMPIEZA ==========
