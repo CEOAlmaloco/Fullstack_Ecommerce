@@ -33,7 +33,7 @@ public class UsuarioCreationDTO {
     private String correo;
 
     @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
+    @Size(min = 4, max = 10, message = "La contraseña debe tener entre 4 y 10 caracteres")
     private String password;
 
     private String telefono;

@@ -93,6 +93,15 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByRunUsuario(String runUsuario);
 
     /**
+     * Busca un usuario por su nombre, ignorando mayúsculas/minúsculas.
+     * Útil para permitir inicio de sesión usando el nombre visible del usuario.
+     *
+     * @param nombre Nombre del usuario
+     * @return Usuario encontrado o vacío si no existe
+     */
+    Optional<Usuario> findFirstByNombreIgnoreCase(String nombre);
+
+    /**
      * Verifica si existe un usuario con el RUN dado
      * @param runUsuario RUN a verificar
      * @return true si existe, false si no

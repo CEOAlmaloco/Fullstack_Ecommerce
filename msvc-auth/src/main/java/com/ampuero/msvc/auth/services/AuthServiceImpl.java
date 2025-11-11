@@ -139,11 +139,16 @@ public class AuthServiceImpl implements AuthService {
             usuarioData.put("correo", registerRequest.getCorreoUsuario());
             usuarioData.put("password", registerRequest.getPassword());
             usuarioData.put("runUsuario", registerRequest.getRunUsuario());
+            usuarioData.put("telefono", registerRequest.getTelefono());
             usuarioData.put("region", registerRequest.getRegion());
             usuarioData.put("comuna", registerRequest.getComuna());
             usuarioData.put("direccion", registerRequest.getDireccionUsuario() != null ? registerRequest.getDireccionUsuario() : "");
             usuarioData.put("ciudad", registerRequest.getComuna()); // Usar comuna como ciudad
-            usuarioData.put("aceptaTerminos", true); // Se asume que se aceptaron porque pasó la validación
+            if (registerRequest.getCodigoReferido() != null && !registerRequest.getCodigoReferido().isEmpty()) {
+                usuarioData.put("referidoPor", registerRequest.getCodigoReferido());
+            }
+            usuarioData.put("aceptaTerminos", Boolean.TRUE);
+            usuarioData.put("aceptaMarketing", registerRequest.getAceptaMarketing() != null ? registerRequest.getAceptaMarketing() : Boolean.FALSE);
             
             // Parsear fecha de nacimiento
             if (registerRequest.getFechaNacimiento() != null && !registerRequest.getFechaNacimiento().isEmpty()) {

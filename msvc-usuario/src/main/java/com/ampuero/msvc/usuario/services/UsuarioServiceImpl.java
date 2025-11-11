@@ -459,15 +459,37 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     @Transactional(readOnly = true)
     public com.ampuero.msvc.usuario.dtos.CredentialsValidationResponseDTO validarCredenciales(String correoUsuario, String password) {
-        log.info("Validando credenciales para correo: {}", correoUsuario);
+        String identificador = correoUsuario != null ? correoUsuario.trim() : "";
+        log.info("Validando credenciales para identificador: {}", identificador);
         
         try {
-            // Buscar usuario por correo
-            Usuario usuario = usuarioRepository.findByCorreo(correoUsuario)
-                    .orElse(null);
+            if (identificador.isEmpty()) {
+                log.warn("Identificador vacío recibido en validación de credenciales");
+                return new com.ampuero.msvc.usuario.dtos.CredentialsValidationResponseDTO(
+                        false, null, null, null, null, null, null, null, null,
+                        "Credenciales inválidas"
+                );
+            }
+
+            Usuario usuario = null;
+
+            // Determinar si es correo (contiene '@') o nombre
+            if (identificador.contains("@")) {
+                usuario = usuarioRepository.findByCorreo(identificador.toLowerCase())
+                        .orElse(null);
+            } else {
+                usuario = usuarioRepository.findFirstByNombreIgnoreCase(identificador)
+                        .orElse(null);
+
+                // Si no se encuentra por nombre, intentar por correo igualmente
+                if (usuario == null) {
+                    usuario = usuarioRepository.findByCorreo(identificador)
+                            .orElse(null);
+                }
+            }
             
             if (usuario == null) {
-                log.warn("Usuario no encontrado con correo: {}", correoUsuario);
+                log.warn("Usuario no encontrado con identificador: {}", identificador);
                 return new com.ampuero.msvc.usuario.dtos.CredentialsValidationResponseDTO(
                         false, null, null, null, null, null, null, null, null,
                         "Credenciales inválidas"
@@ -476,7 +498,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             
             // Verificar estado del usuario
             if (usuario.getEstado() != Usuario.EstadoUsuario.ACTIVO) {
-                log.warn("Usuario inactivo con correo: {}", correoUsuario);
+                log.warn("Usuario inactivo con identificador: {}", identificador);
                 // Calcular descuentoDuoc basado en el correo (si es @duoc.cl o @profesor.duoc.cl)
                 Boolean descuentoDuoc = usuario.getCorreo() != null && 
                         (usuario.getCorreo().endsWith("@duoc.cl") || usuario.getCorreo().endsWith("@profesor.duoc.cl"));
@@ -490,7 +512,7 @@ public class UsuarioServiceImpl implements UsuarioService {
             
             // Verificar contraseña
             if (!passwordEncoder.matches(password, usuario.getPassword())) {
-                log.warn("Contraseña incorrecta para correo: {}", correoUsuario);
+                log.warn("Contraseña incorrecta para identificador: {}", identificador);
                 // Calcular descuentoDuoc basado en el correo (si es @duoc.cl o @profesor.duoc.cl)
                 Boolean descuentoDuoc = usuario.getCorreo() != null && 
                         (usuario.getCorreo().endsWith("@duoc.cl") || usuario.getCorreo().endsWith("@profesor.duoc.cl"));

@@ -9,9 +9,7 @@ import lombok.Data;
 @Data
 public class RegisterRequestDTO {
 
-    @NotBlank(message = "El RUN es requerido")
-    @Size(min = 7, max = 9, message = "El RUN debe tener entre 7 y 9 caracteres")
-    @Pattern(regexp = "^[0-9]{7,8}[0-9Kk]$", message = "RUN debe tener formato válido")
+    @Pattern(regexp = "^$|^[0-9]{7,8}[0-9Kk]$", message = "RUN debe tener formato válido")
     private String runUsuario;
 
     @NotBlank(message = "El nombre es requerido")
@@ -29,7 +27,7 @@ public class RegisterRequestDTO {
     private String correoUsuario;
 
     @NotBlank(message = "La contraseña es requerida")
-    @Size(min = 8, max = 100, message = "La contraseña debe tener entre 8 y 100 caracteres")
+    @Size(min = 4, max = 10, message = "La contraseña debe tener entre 4 y 10 caracteres")
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$",
             message = "La contraseña debe contener al menos: 1 minúscula, 1 mayúscula y 1 número")
     private String password;
@@ -45,4 +43,13 @@ public class RegisterRequestDTO {
 
     @Size(max = 300, message = "La dirección no puede exceder 300 caracteres")
     private String direccionUsuario; // Campo opcional
+
+    @Size(max = 20, message = "El teléfono no puede exceder 20 caracteres")
+    @Pattern(regexp = "^$|^\\+?[0-9\\s\\-()]+$", message = "Formato de teléfono inválido")
+    private String telefono;
+
+    @Size(max = 50, message = "El código de referido no puede exceder 50 caracteres")
+    private String codigoReferido;
+
+    private Boolean aceptaMarketing;
 }
