@@ -11,7 +11,7 @@ import java.util.Map;
  * Cliente Feign para comunicación con msvc-auth
  * Permite validar tokens y obtener información de autenticación
  */
-@FeignClient(name = "msvc-auth", url = "localhost:8001")
+@FeignClient(name = "msvc-auth", url = "${MSVC_AUTH_URL:http://localhost:8001}")
 public interface AuthClientRest {
 
     /**

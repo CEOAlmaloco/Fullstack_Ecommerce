@@ -1,10 +1,13 @@
 package com.ampuero.msvc.gateway;
 
+import java.util.Arrays;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
@@ -12,68 +15,91 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 @SpringBootApplication
 public class MsvcGatewayApplication {
 
+    private final Environment environment;
+
+    public MsvcGatewayApplication(Environment environment) {
+        this.environment = environment;
+    }
+
     public static void main(String[] args) {
         SpringApplication.run(MsvcGatewayApplication.class, args);
     }
 
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
+        String authServiceUrl = environment.getProperty("clients.auth.base-url", "http://localhost:8001");
+        String usuarioServiceUrl = environment.getProperty("clients.usuario.base-url", "http://localhost:8095");
+        String productosServiceUrl = environment.getProperty("clients.productos.base-url", "http://localhost:8003");
+        String carritoServiceUrl = environment.getProperty("clients.carrito.base-url", "http://localhost:8008");
+        String pedidoServiceUrl = environment.getProperty("clients.pedido.base-url", "http://localhost:8085");
+        String inventarioServiceUrl = environment.getProperty("clients.inventario.base-url", "http://localhost:8004");
+        String referidosServiceUrl = environment.getProperty("clients.referidos.base-url", "http://localhost:8005");
+        String reseniaServiceUrl = environment.getProperty("clients.resenia.base-url", "http://localhost:8010");
+        String pagosServiceUrl = environment.getProperty("clients.pagos.base-url", "http://localhost:8011");
+        String notificacionesServiceUrl = environment.getProperty("clients.notificaciones.base-url", "http://localhost:8006");
+        String eventosServiceUrl = environment.getProperty("clients.eventos.base-url", "http://localhost:8092");
+        String contenidoServiceUrl = environment.getProperty("clients.contenido.base-url", "http://localhost:8093");
+        String promocionesServiceUrl = environment.getProperty("clients.promociones.base-url", "http://localhost:8091");
+
         return builder.routes()
                 // Auth Service - Rutea /auth/** a /api/v1/auth/** en el microservicio
                 .route("msvc-auth", r -> r.path("/auth/**")
                         .filters(f -> f.rewritePath("/auth/(?<path>.*)", "/api/v1/auth/${path}"))
-                        .uri("http://localhost:8001"))
+                        .uri(authServiceUrl))
 
                 // User Service - Rutea /usuarios/** a /api/v1/usuarios/** en el microservicio
                 .route("msvc-usuario", r -> r.path("/usuarios/**")
                         .filters(f -> f.rewritePath("/usuarios/(?<path>.*)", "/api/v1/usuarios/${path}"))
-                        .uri("http://localhost:8095"))
+                        .uri(usuarioServiceUrl))
 
                 // Product Service - Reescribe /productos a /api/v1/productos y /productos/** a /api/v1/productos/**
                 .route("msvc-productos", r -> r.path("/productos", "/productos/**")
                         .filters(f -> f.rewritePath("/productos(?<path>.*)", "/api/v1/productos${path}"))
-                        .uri("http://localhost:8003"))
+                        .uri(productosServiceUrl))
 
                 // Cart Service - Sin prefijo, va directo a /carrito/**
                 .route("msvc-carrito", r -> r.path("/carrito/**")
-                        .uri("http://localhost:8008"))
+                        .uri(carritoServiceUrl))
 
-                // Order Service
-                .route("msvc-pedido", r -> r.path("/pedidos/**")
-                        .uri("http://localhost:8085"))
+                // Order Service - Reescribe /pedidos a /api/v1/pedidos
+                .route("msvc-pedido", r -> r.path("/pedidos", "/pedidos/**")
+                        .filters(f -> f.rewritePath("/pedidos(?<path>.*)", "/api/v1/pedidos${path}"))
+                        .uri(pedidoServiceUrl))
 
                 // Inventory Service
                 .route("msvc-inventario", r -> r.path("/inventario/**")
-                        .uri("http://localhost:8004"))
+                        .uri(inventarioServiceUrl))
 
                 // Referral Service
                 .route("msvc-referidos", r -> r.path("/referidos/**")
-                        .uri("http://localhost:8005"))
+                        .uri(referidosServiceUrl))
 
                 // Review Service - Rutea /resenias/** a /api/v1/resenias/** en el microservicio
                 .route("msvc-resenia", r -> r.path("/resenias/**")
                         .filters(f -> f.rewritePath("/resenias/(?<path>.*)", "/api/v1/resenias/${path}"))
-                        .uri("http://localhost:8010"))
+                        .uri(reseniaServiceUrl))
 
-                // Payment Service
-                .route("msvc-pagos", r -> r.path("/pagos/**")
-                        .uri("http://localhost:8011"))
+                // Payment Service - Reescribe /pagos a /api/v1/pagos
+                .route("msvc-pagos", r -> r.path("/pagos", "/pagos/**")
+                        .filters(f -> f.rewritePath("/pagos(?<path>.*)", "/api/v1/pagos${path}"))
+                        .uri(pagosServiceUrl))
 
                 // Notification Service
                 .route("msvc-notificaciones", r -> r.path("/notificaciones/**")
-                        .uri("http://localhost:8006"))
+                        .uri(notificacionesServiceUrl))
 
                 // Event Service
                 .route("msvc-eventos", r -> r.path("/eventos/**")
-                        .uri("http://localhost:8092"))
+                        .uri(eventosServiceUrl))
 
                 // Content Service
                 .route("msvc-contenido", r -> r.path("/contenido/**")
-                        .uri("http://localhost:8093"))
+                        .uri(contenidoServiceUrl))
 
-                // Promotion Service
-                .route("msvc-promociones", r -> r.path("/promociones/**")
-                        .uri("http://localhost:8091"))
+                // Promotion Service - Reescribe /promociones a /api/v1/promociones
+                .route("msvc-promociones", r -> r.path("/promociones", "/promociones/**")
+                        .filters(f -> f.rewritePath("/promociones(?<path>.*)", "/api/v1/promociones${path}"))
+                        .uri(promocionesServiceUrl))
 
                 .build();
     }
@@ -81,10 +107,12 @@ public class MsvcGatewayApplication {
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.addAllowedOrigin("http://localhost:3000"); // Frontend React
-        corsConfig.addAllowedOrigin("http://localhost:5173"); // Frontend React Vite
-        corsConfig.addAllowedOrigin("http://localhost:4200"); // Frontend Angular
-        corsConfig.addAllowedOrigin("http://10.0.2.2:8094"); // Android Emulator
+        String allowedOrigins = environment.getProperty("cors.allowed-origins", "http://localhost:5173,http://localhost:3000");
+        Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .distinct()
+                .forEach(corsConfig::addAllowedOrigin);
         corsConfig.addAllowedMethod("*");
         corsConfig.addAllowedHeader("*");
         corsConfig.setAllowCredentials(true);

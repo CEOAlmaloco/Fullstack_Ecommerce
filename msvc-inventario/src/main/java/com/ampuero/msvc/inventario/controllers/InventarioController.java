@@ -19,7 +19,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/inventario")
 @Validated
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "http://localhost:3000"})
 @Tag(name = "Inventario API", description = "Gestión de inventario y control de stock")
 public class InventarioController {
 

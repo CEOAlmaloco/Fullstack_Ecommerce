@@ -43,6 +43,33 @@ public class ProductoMapper {
         dto.setActivo(producto.getDisponible());
         dto.setFechaCreacion(producto.getCreatedAt());
         dto.setFechaModificacion(producto.getUpdatedAt());
+        dto.setCodigoProducto(producto.getCodigoProducto());
+        dto.setRating(producto.getRating());
+        Double ratingPromedio = producto.getRatingPromedioCalculado() != null
+                ? producto.getRatingPromedioCalculado()
+                : producto.getRating();
+        dto.setRatingPromedio(ratingPromedio);
+        dto.setReviews(producto.getReviews());
+        dto.setEnOferta(producto.getOfertaActiva());
+        dto.setDescuento(producto.getDescuentoCalculado());
+        dto.setPrecioConDescuento(producto.getPrecioConDescuentoCalculado());
+        dto.setFabricante(producto.getFabricante());
+        dto.setDistribuidor(producto.getDistribuidor());
+        dto.setDestacado(producto.getDestacadoHome());
+
+        if (producto.getCategoria() != null) {
+            dto.setCategoriaId(producto.getCategoria().getId());
+            dto.setCategoriaNombre(producto.getCategoria().getNombre());
+        } else {
+            dto.setCategoriaId(producto.getCategoriaId());
+        }
+
+        if (producto.getSubcategoria() != null) {
+            dto.setSubcategoriaId(producto.getSubcategoria().getId());
+            dto.setSubcategoriaNombre(producto.getSubcategoria().getNombre());
+        } else {
+            dto.setSubcategoriaId(producto.getSubcategoriaId());
+        }
 
         // Construir URLs de S3 desde las referencias guardadas en BD
         String imagenS3Key = producto.getImagen();

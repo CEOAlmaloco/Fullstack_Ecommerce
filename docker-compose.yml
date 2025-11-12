@@ -1,215 +1,402 @@
-version: '3.8'
+version: "3.9"
 
 services:
-  # Gateway
-  gateway:
+  postgres:
+    image: postgres:15-alpine
+    container_name: levelup-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/create-multiple-dbs.sh:/docker-entrypoint-initdb.d/create-multiple-dbs.sh
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  msvc-gateway:
     build:
       context: ./msvc-gateway
       dockerfile: ../DOCKERFILE
-    ports:
-      - "8080:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - DB_URL=jdbc:postgresql://postgres:5432/levelup_gateway
-      - DB_USERNAME=levelup_user
-      - DB_PASSWORD=${DB_PASSWORD}
+    container_name: msvc-gateway
+    restart: unless-stopped
     depends_on:
-      - postgres
-    networks:
-      - levelup-network
+      postgres:
+        condition: service_healthy
+      msvc-auth:
+        condition: service_started
+      msvc-usuario:
+        condition: service_started
+      msvc-productos:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      MSVC_AUTH_URL: http://msvc-auth:8001
+      MSVC_USUARIO_URL: http://msvc-usuario:8095
+      MSVC_PRODUCTOS_URL: http://msvc-productos:8003
+      MSVC_CARRITO_URL: http://msvc-carrito:8008
+      MSVC_PEDIDO_URL: http://msvc-pedido:8085
+      MSVC_INVENTARIO_URL: http://msvc-inventario:8004
+      MSVC_REFERIDOS_URL: http://msvc-referidos:8005
+      MSVC_RESENIA_URL: http://msvc-resenia:8010
+      MSVC_PAGOS_URL: http://msvc-pagos:8011
+      MSVC_NOTIFICACIONES_URL: http://msvc-notificaciones:8006
+      MSVC_EVENTOS_URL: http://msvc-eventos:8092
+      MSVC_CONTENIDO_URL: http://msvc-contenido:8093
+      MSVC_PROMOCIONES_URL: http://msvc-promociones:8091
+    ports:
+      - "8094:8094"
 
-  # Auth
-  auth:
+  frontend:
+    build:
+      context: ../../Frontend_React_Typescript/levelup-react/proyecto-levelup-frontend/levelup-react
+      dockerfile: Dockerfile
+    container_name: levelup-frontend
+    restart: unless-stopped
+    depends_on:
+      msvc-gateway:
+        condition: service_started
+    env_file:
+      - ../../Frontend_React_Typescript/levelup-react/proyecto-levelup-frontend/levelup-react/docker.env
+    environment:
+      VITE_GATEWAY_URL: http://msvc-gateway:8094
+    ports:
+      - "5173:5173"
+
+  msvc-auth:
     build:
       context: ./msvc-auth
       dockerfile: ../DOCKERFILE
+    container_name: msvc-auth
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: levelup_auth
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      JWT_SECRET: ${JWT_SECRET:-levelUpGamerSecretKey2024SecureForJWT256BitsMinimum}
+      MSVC_USUARIO_URL: http://msvc-usuario:8095
     ports:
       - "8001:8001"
-    environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - DB_URL=jdbc:postgresql://postgres:5432/levelup_auth
-      - DB_USERNAME=levelup_user
-      - DB_PASSWORD=${DB_PASSWORD}
-      - JWT_SECRET=${JWT_SECRET}
-    depends_on:
-      - postgres
-    networks:
-      - levelup-network
 
-  # Usuario
-  usuario:
+  msvc-usuario:
     build:
       context: ./msvc-usuario
       dockerfile: ../DOCKERFILE
+    container_name: msvc-usuario
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: levelup_usuario
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      MSVC_REFERIDOS_URL: http://msvc-referidos:8005
+      MSVC_NOTIFICACIONES_URL: http://msvc-notificaciones:8006
+      MSVC_PRODUCTOS_URL: http://msvc-productos:8003
+      MSVC_INVENTARIO_URL: http://msvc-inventario:8004
+      MSVC_AUTH_URL: http://msvc-auth:8001
     ports:
       - "8095:8095"
-    environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - DB_URL=jdbc:postgresql://postgres:5432/levelup_usuario
-      - DB_USERNAME=levelup_user
-      - DB_PASSWORD=${DB_PASSWORD}
-    depends_on:
-      - postgres
-    networks:
-      - levelup-network
 
-  # Productos
-  productos:
+  msvc-productos:
     build:
       context: ./msvc-productos
       dockerfile: ../DOCKERFILE
+    container_name: msvc-productos
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: levelup_productos
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME:-levelup-gamer-products}
+      S3_REGION: ${S3_REGION:-us-east-1}
+      S3_BASE_URL: ${S3_BASE_URL:-https://levelup-gamer-products.s3.us-east-1.amazonaws.com}
+      MSVC_INVENTARIO_API_URL: http://msvc-inventario:8004/api/v1
+      MSVC_RESENIA_API_URL: http://msvc-resenia:8010/api/v1
+      MSVC_PROMOCIONES_API_URL: http://msvc-promociones:8091/api/v1
     ports:
       - "8003:8003"
-    environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - DB_URL=jdbc:postgresql://postgres:5432/levelup_productos
-      - DB_USERNAME=levelup_user
-      - DB_PASSWORD=${DB_PASSWORD}
-    depends_on:
-      - postgres
-    networks:
-      - levelup-network
 
-  # Carrito
-  carrito:
-    build:
-      context: ./msvc-carrito
-      dockerfile: ../DOCKERFILE
-    ports:
-      - "8008:8008"
-    environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - DB_URL=jdbc:postgresql://postgres:5432/levelup_carrito
-      - DB_USERNAME=levelup_user
-      - DB_PASSWORD=${DB_PASSWORD}
-    depends_on:
-      - postgres
-    networks:
-      - levelup-network
-
-  # Pedido
-  pedido:
-    build:
-      context: ./msvc-pedido
-      dockerfile: ../DOCKERFILE
-    ports:
-      - "8085:8085"
-    environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - DB_URL=jdbc:postgresql://postgres:5432/levelup_pedido
-      - DB_USERNAME=levelup_user
-      - DB_PASSWORD=${DB_PASSWORD}
-    depends_on:
-      - postgres
-    networks:
-      - levelup-network
-
-  # Pagos
-  pagos:
-    build:
-      context: ./msvc-pagos
-      dockerfile: ../DOCKERFILE
-    ports:
-      - "8011:8011"
-    environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - DB_URL=jdbc:postgresql://postgres:5432/levelup_pagos
-      - DB_USERNAME=levelup_user
-      - DB_PASSWORD=${DB_PASSWORD}
-    depends_on:
-      - postgres
-    networks:
-      - levelup-network
-
-  # Resenia
-  resenia:
-    build:
-      context: ./msvc-resenia
-      dockerfile: ../DOCKERFILE
-    ports:
-      - "8010:8010"
-    environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - DB_URL=jdbc:postgresql://postgres:5432/levelup_resenia
-      - DB_USERNAME=levelup_user
-      - DB_PASSWORD=${DB_PASSWORD}
-    depends_on:
-      - postgres
-    networks:
-      - levelup-network
-
-  # Referidos
-  referidos:
-    build:
-      context: ./msvc-referidos
-      dockerfile: ../DOCKERFILE
-    ports:
-      - "8005:8005"
-    environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - DB_URL=jdbc:postgresql://postgres:5432/levelup_referidos
-      - DB_USERNAME=levelup_user
-      - DB_PASSWORD=${DB_PASSWORD}
-    depends_on:
-      - postgres
-    networks:
-      - levelup-network
-
-  # Promociones
-  promociones:
-    build:
-      context: ./msvc-promociones
-      dockerfile: ../DOCKERFILE
-    ports:
-      - "8091:8091"
-    environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - DB_URL=jdbc:postgresql://postgres:5432/levelup_promociones
-      - DB_USERNAME=levelup_user
-      - DB_PASSWORD=${DB_PASSWORD}
-    depends_on:
-      - postgres
-    networks:
-      - levelup-network
-
-  # Inventario
-  inventario:
+  msvc-inventario:
     build:
       context: ./msvc-inventario
       dockerfile: ../DOCKERFILE
+    container_name: msvc-inventario
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      msvc-productos:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: levelup_inventario
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      PRODUCTOS_URL: http://msvc-productos:8003/api/v1
+      MSVC_PRODUCTOS_API_URL: http://msvc-productos:8003/api/v1
     ports:
       - "8004:8004"
-    environment:
-      - SPRING_PROFILES_ACTIVE=prod
-      - DB_URL=jdbc:postgresql://postgres:5432/levelup_inventario
-      - DB_USERNAME=levelup_user
-      - DB_PASSWORD=${DB_PASSWORD}
-      - PRODUCTOS_URL=http://productos:8003/api/v1
+
+  msvc-carrito:
+    build:
+      context: ./msvc-carrito
+      dockerfile: ../DOCKERFILE
+    container_name: msvc-carrito
+    restart: unless-stopped
     depends_on:
-      - postgres
-      - productos
-    networks:
-      - levelup-network
-
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
+      postgres:
+        condition: service_healthy
+      msvc-productos:
+        condition: service_started
+      msvc-inventario:
+        condition: service_started
     environment:
-      - POSTGRES_USER=levelup_user
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_MULTIPLE_DATABASES=levelup_auth,levelup_usuario,levelup_productos,levelup_carrito,levelup_pedido,levelup_pagos,levelup_resenia,levelup_referidos,levelup_promociones,levelup_inventario
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: levelup_carrito
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      MSVC_PRODUCTOS_URL: http://msvc-productos:8003
+      MSVC_INVENTARIO_URL: http://msvc-inventario:8004
     ports:
-      - "5432:5432"
-    networks:
-      - levelup-network
+      - "8008:8008"
 
-networks:
-  levelup-network:
-    driver: bridge
+  msvc-pedido:
+    build:
+      context: ./msvc-pedido
+      dockerfile: ../DOCKERFILE
+    container_name: msvc-pedido
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      msvc-carrito:
+        condition: service_started
+      msvc-inventario:
+        condition: service_started
+      msvc-pagos:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: levelup_pedido
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      MSVC_CARRITO_URL: http://msvc-carrito:8008
+      MSVC_INVENTARIO_URL: http://msvc-inventario:8004
+      MSVC_PAGOS_URL: http://msvc-pagos:8011
+    ports:
+      - "8085:8085"
+
+  msvc-pagos:
+    build:
+      context: ./msvc-pagos
+      dockerfile: ../DOCKERFILE
+    container_name: msvc-pagos
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      msvc-notificaciones:
+        condition: service_started
+      msvc-usuario:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: levelup_pagos
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      MSVC_USUARIO_URL: http://msvc-usuario:8095
+      MSVC_PEDIDO_URL: http://msvc-pedido:8085
+      MSVC_NOTIFICACIONES_URL: http://msvc-notificaciones:8006
+    ports:
+      - "8011:8011"
+
+  msvc-resenia:
+    build:
+      context: ./msvc-resenia
+      dockerfile: ../DOCKERFILE
+    container_name: msvc-resenia
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      msvc-productos:
+        condition: service_started
+      msvc-usuario:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: levelup_resenia
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      MSVC_USUARIO_URL: http://msvc-usuario:8095
+      MSVC_PRODUCTOS_URL: http://msvc-productos:8003
+    ports:
+      - "8010:8010"
+
+  msvc-referidos:
+    build:
+      context: ./msvc-referidos
+      dockerfile: ../DOCKERFILE
+    container_name: msvc-referidos
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      msvc-usuario:
+        condition: service_started
+      msvc-notificaciones:
+        condition: service_started
+      msvc-promociones:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: levelup_referidos
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      MSVC_USUARIO_URL: http://msvc-usuario:8095
+      MSVC_NOTIFICACIONES_URL: http://msvc-notificaciones:8006
+      MSVC_PROMOCIONES_URL: http://msvc-promociones:8091
+      MSVC_PRODUCTOS_URL: http://msvc-productos:8003
+      MSVC_AUTH_URL: http://msvc-auth:8001
+      MSVC_INVENTARIO_URL: http://msvc-inventario:8004
+    ports:
+      - "8005:8005"
+
+  msvc-promociones:
+    build:
+      context: ./msvc-promociones
+      dockerfile: ../DOCKERFILE
+    container_name: msvc-promociones
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      msvc-usuario:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: levelup_promociones
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      MSVC_USUARIO_URL: http://msvc-usuario:8095
+    ports:
+      - "8091:8091"
+
+  msvc-notificaciones:
+    build:
+      context: ./msvc-notificaciones
+      dockerfile: ../DOCKERFILE
+    container_name: msvc-notificaciones
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      msvc-usuario:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: levelup_notificaciones
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      MSVC_USUARIO_URL: http://msvc-usuario:8095
+    ports:
+      - "8006:8006"
+
+  msvc-eventos:
+    build:
+      context: ./msvc-eventos
+      dockerfile: ../DOCKERFILE
+    container_name: msvc-eventos
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      msvc-usuario:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: levelup_eventos
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      MSVC_USUARIO_URL: http://msvc-usuario:8095
+    ports:
+      - "8092:8092"
+
+  msvc-contenido:
+    build:
+      context: ./msvc-contenido
+      dockerfile: ../DOCKERFILE
+    container_name: msvc-contenido
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      msvc-usuario:
+        condition: service_started
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: levelup_contenido
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      MSVC_USUARIO_URL: http://msvc-usuario:8095
+    ports:
+      - "8093:8093"
 
 volumes:
   postgres_data:
-

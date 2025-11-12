@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/pagos")
-@CrossOrigin(origins = "*")
 public class PagoController {
 
     @Autowired

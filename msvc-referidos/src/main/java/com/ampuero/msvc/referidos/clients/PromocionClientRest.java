@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@FeignClient(name = "msvc-promociones", url = "localhost:8007")
+@FeignClient(name = "msvc-promociones", url = "${MSVC_PROMOCIONES_URL:http://localhost:8091}")
 public interface PromocionClientRest {
 
     @GetMapping("/api/v1/promociones/activas")

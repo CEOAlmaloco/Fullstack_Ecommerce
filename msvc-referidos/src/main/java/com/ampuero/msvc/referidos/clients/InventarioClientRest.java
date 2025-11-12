@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@FeignClient(name = "msvc-inventario", url = "localhost:8004")
+@FeignClient(name = "msvc-inventario", url = "${MSVC_INVENTARIO_URL:http://localhost:8004}")
 public interface InventarioClientRest {
 
     @GetMapping("/api/v1/inventario/producto/{idProducto}/stock")

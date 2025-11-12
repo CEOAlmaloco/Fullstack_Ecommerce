@@ -11,7 +11,7 @@ import java.util.Map;
  * Cliente Feign para comunicación con msvc-inventario
  * Permite gestionar el inventario relacionado con usuarios
  */
-@FeignClient(name = "msvc-inventario", url = "localhost:8004")
+@FeignClient(name = "msvc-inventario", url = "${MSVC_INVENTARIO_URL:http://localhost:8004}")
 public interface InventarioClientRest {
 
     /**

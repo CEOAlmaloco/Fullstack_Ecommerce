@@ -1,5 +1,6 @@
 package com.ampuero.msvc.producto.models;
 
+import com.ampuero.msvc.producto.dtos.ReseniaResumenDTO;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -9,6 +10,9 @@ import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Entity
 @Table(name = "productos")
@@ -135,6 +139,30 @@ public class Producto {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Transient
+    private List<ReseniaResumenDTO> reviews = new ArrayList<>();
+
+    @Transient
+    private Double ratingPromedioCalculado;
+
+    @Transient
+    private Boolean ofertaActiva;
+
+    @Transient
+    private Double descuentoCalculado;
+
+    @Transient
+    private Double precioConDescuentoCalculado;
+
+    @Transient
+    private Boolean destacadoHome;
+
+    @Transient
+    private String fabricante;
+
+    @Transient
+    private String distribuidor;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -159,5 +187,26 @@ public class Producto {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public List<ReseniaResumenDTO> getReviews() {
+        return reviews == null ? Collections.emptyList() : Collections.unmodifiableList(reviews);
+    }
+
+    public void setReviews(List<ReseniaResumenDTO> reviews) {
+        if (reviews == null) {
+            this.reviews = new ArrayList<>();
+        } else {
+            this.reviews = new ArrayList<>(reviews);
+        }
+    }
+    
+    public void appendReview(ReseniaResumenDTO review) {
+        if (this.reviews == null) {
+            this.reviews = new ArrayList<>();
+        }
+        if (review != null) {
+            this.reviews.add(review);
+        }
     }
 }

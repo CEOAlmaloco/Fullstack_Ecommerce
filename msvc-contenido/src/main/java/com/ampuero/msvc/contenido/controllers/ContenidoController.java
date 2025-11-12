@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/contenido")
-@CrossOrigin(origins = "*")
 public class ContenidoController {
 
     @Autowired

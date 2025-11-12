@@ -11,7 +11,7 @@ import java.util.Map;
  * Cliente Feign para comunicación con msvc-productos
  * Permite obtener información de productos relacionados con usuarios
  */
-@FeignClient(name = "msvc-productos", url = "localhost:8003")
+@FeignClient(name = "msvc-productos", url = "${MSVC_PRODUCTOS_URL:http://localhost:8003}")
 public interface ProductoClientRest {
 
     /**

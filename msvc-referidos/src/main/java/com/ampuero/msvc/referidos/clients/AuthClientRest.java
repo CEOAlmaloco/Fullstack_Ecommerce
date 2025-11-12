@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@FeignClient(name = "msvc-auth", url = "localhost:8001")
+@FeignClient(name = "msvc-auth", url = "${MSVC_AUTH_URL:http://localhost:8001}")
 public interface AuthClientRest {
 
     @GetMapping("/api/v1/auth/validate-token")

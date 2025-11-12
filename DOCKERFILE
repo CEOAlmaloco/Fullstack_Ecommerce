@@ -1,21 +1,15 @@
-# Dockerfile base para microservicios Spring Boot
-# Usar como base y personalizar para cada microservicio
-FROM openjdk:17-jdk-slim
+# Dockerfile base reutilizable para los microservicios Spring Boot
+FROM amazoncorretto:21-alpine
 
 WORKDIR /app
 
-# Copiar el JAR del microservicio
-COPY target/*.jar app.jar
+# Copiar el artefacto generado por Maven
+ARG JAR_FILE=target/*.jar
+COPY ${JAR_FILE} app.jar
 
-# Exponer el puerto (cambiar según microservicio)
-EXPOSE 8003
+# Perfil por defecto para el stack docker-compose (puede sobrescribirse)
+ENV SPRING_PROFILES_ACTIVE=docker
+ENV JAVA_OPTS=""
 
-# Variables de entorno por defecto
-ENV SPRING_PROFILES_ACTIVE=prod
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:8003/api/v1/health || exit 1
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
-
+# Entrada flexible para permitir flags adicionales (por ejemplo, -Xms512m)
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]

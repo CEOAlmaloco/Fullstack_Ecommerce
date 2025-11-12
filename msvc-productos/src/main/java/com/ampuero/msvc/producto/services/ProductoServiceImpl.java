@@ -1,5 +1,9 @@
 package com.ampuero.msvc.producto.services;
 
+import com.ampuero.msvc.producto.clients.PromocionClient;
+import com.ampuero.msvc.producto.clients.ReseniaClient;
+import com.ampuero.msvc.producto.dtos.PromocionResumenDTO;
+import com.ampuero.msvc.producto.dtos.ReseniaResumenDTO;
 import com.ampuero.msvc.producto.exceptions.ProductoException;
 import com.ampuero.msvc.producto.models.Producto;
 import com.ampuero.msvc.producto.repositories.ProductoRepository;
@@ -8,10 +12,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Implementación del servicio de gestión de productos.
@@ -42,6 +45,12 @@ public class ProductoServiceImpl implements ProductoService {
     
     @Autowired
     private ProductoMapper productoMapper;
+
+    @Autowired(required = false)
+    private ReseniaClient reseniaClient;
+
+    @Autowired(required = false)
+    private PromocionClient promocionClient;
 
     @Override
     public Producto crearProducto(Producto producto) {
@@ -97,6 +106,7 @@ public class ProductoServiceImpl implements ProductoService {
             }
             
             log.info("Total productos a retornar: {}", productos.size());
+            enrichProductos(productos);
             return productos;
         } catch (Exception ex) {
             log.error("Error al cargar productos: {}", ex.getMessage(), ex);
@@ -131,7 +141,7 @@ public class ProductoServiceImpl implements ProductoService {
                 // Log del error si es necesario
             }
         }
-        
+        enrichProductos(List.of(producto));
         return producto;
     }
 
@@ -233,18 +243,22 @@ public class ProductoServiceImpl implements ProductoService {
                 }
             }
         }
-        
+        enrichProductos(productos);
         return productos;
     }
 
     @Override
     public List<Producto> obtenerPorCategoria(String categoria) {
-        return productoRepository.findByCategoriaId(categoria);
+        List<Producto> productos = productoRepository.findByCategoriaId(categoria);
+        enrichProductos(productos);
+        return productos;
     }
 
     @Override
     public List<Producto> obtenerDisponibles() {
-        return productoRepository.findByDisponibleTrueAndStockGreaterThan(0);
+        List<Producto> productos = productoRepository.findByDisponibleTrueAndStockGreaterThan(0);
+        enrichProductos(productos);
+        return productos;
     }
 
     @Override
@@ -581,7 +595,9 @@ public class ProductoServiceImpl implements ProductoService {
         List<Producto> productosPaginados = filtrados.isEmpty() ? 
                 new java.util.ArrayList<>() : 
                 (inicio < filtrados.size() ? filtrados.subList(inicio, fin) : new java.util.ArrayList<>());
-        
+
+        enrichProductos(productosPaginados);
+ 
         log.info("PASO 7 - Paginación aplicada: inicio={}, fin={}, productosEnPagina={}", 
                 inicio, fin, productosPaginados.size());
         
@@ -606,5 +622,141 @@ public class ProductoServiceImpl implements ProductoService {
         log.info("========================================");
         
         return respuesta;
+    }
+
+    private void enrichProductos(List<Producto> productos) {
+        if (productos == null || productos.isEmpty()) {
+            return;
+        }
+        enrichWithResenias(productos);
+        enrichWithPromociones(productos);
+    }
+
+    private void enrichWithResenias(List<Producto> productos) {
+        if (reseniaClient == null) {
+            log.debug("ReseniaClient no disponible, se omite enriquecimiento de reseñas");
+            return;
+        }
+        try {
+            List<ReseniaResumenDTO> resenias = reseniaClient.obtenerResenias();
+            if (resenias == null || resenias.isEmpty()) {
+                productos.forEach(p -> {
+                    p.setReviews(Collections.emptyList());
+                    p.setRatingPromedioCalculado(p.getRating());
+                });
+                return;
+            }
+
+            Map<Long, List<ReseniaResumenDTO>> reseniasPorProducto = resenias.stream()
+                    .filter(resenia -> resenia != null && resenia.getIdProducto() != null)
+                    .collect(Collectors.groupingBy(ReseniaResumenDTO::getIdProducto));
+
+            for (Producto producto : productos) {
+                if (producto == null || producto.getId() == null) {
+                    continue;
+                }
+                List<ReseniaResumenDTO> lista = reseniasPorProducto.getOrDefault(producto.getId(), Collections.emptyList());
+                producto.setReviews(lista);
+                double promedio = lista.stream()
+                        .map(ReseniaResumenDTO::getRating)
+                        .filter(Objects::nonNull)
+                        .mapToInt(Integer::intValue)
+                        .average()
+                        .orElse(0.0);
+                producto.setRatingPromedioCalculado(promedio);
+            }
+        } catch (Exception ex) {
+            log.warn("No se pudieron cargar reseñas desde msvc-resenia: {}", ex.getMessage());
+        }
+    }
+
+    private void enrichWithPromociones(List<Producto> productos) {
+        if (promocionClient == null) {
+            log.debug("PromocionClient no disponible, se omite enriquecimiento de promociones");
+            return;
+        }
+
+        try {
+            List<PromocionResumenDTO> promociones = promocionClient.obtenerPromocionesActivas();
+            if (promociones == null || promociones.isEmpty()) {
+                productos.forEach(p -> {
+                    p.setOfertaActiva(Boolean.FALSE);
+                    p.setDescuentoCalculado(null);
+                    p.setPrecioConDescuentoCalculado(null);
+                });
+                return;
+            }
+
+            LocalDateTime ahora = LocalDateTime.now();
+
+            for (Producto producto : productos) {
+                if (producto == null) {
+                    continue;
+                }
+
+                Double precio = producto.getPrecio();
+                if (precio == null || precio <= 0) {
+                    producto.setOfertaActiva(Boolean.FALSE);
+                    producto.setDescuentoCalculado(null);
+                    producto.setPrecioConDescuentoCalculado(null);
+                    continue;
+                }
+
+                String categoriaProducto = producto.getCategoriaId();
+                double mejorPorcentaje = 0.0;
+
+                for (PromocionResumenDTO promocion : promociones) {
+                    if (promocion == null || Boolean.FALSE.equals(promocion.getActivo())) {
+                        continue;
+                    }
+                    if (Boolean.TRUE.equals(promocion.getAplicableDuoc())) {
+                        // Evitar aplicar promociones exclusivas para usuarios Duoc al catálogo general
+                        continue;
+                    }
+                    if (promocion.getFechaInicio() != null && ahora.isBefore(promocion.getFechaInicio())) {
+                        continue;
+                    }
+                    if (promocion.getFechaFin() != null && ahora.isAfter(promocion.getFechaFin())) {
+                        continue;
+                    }
+                    if (promocion.getMontoMinimo() != null && precio < promocion.getMontoMinimo()) {
+                        continue;
+                    }
+                    String categoriaAplicable = promocion.getCategoriaAplicable();
+                    if (categoriaAplicable != null && !categoriaAplicable.isBlank()) {
+                        if (categoriaProducto == null || !categoriaAplicable.equalsIgnoreCase(categoriaProducto)) {
+                            continue;
+                        }
+                    }
+
+                    double porcentaje = 0.0;
+                    if (promocion.getValorDescuento() != null) {
+                        if ("PORCENTAJE".equalsIgnoreCase(promocion.getTipoDescuento())) {
+                            porcentaje = promocion.getValorDescuento();
+                        } else if ("MONTO".equalsIgnoreCase(promocion.getTipoDescuento()) && precio > 0) {
+                            porcentaje = (promocion.getValorDescuento() / precio) * 100;
+                        }
+                    }
+
+                    if (porcentaje > mejorPorcentaje) {
+                        mejorPorcentaje = porcentaje;
+                    }
+                }
+
+                if (mejorPorcentaje > 0) {
+                    double porcentajeRedondeado = Math.round(mejorPorcentaje * 100.0) / 100.0;
+                    double precioConDescuento = Math.max(0.0, precio * (1 - (porcentajeRedondeado / 100)));
+                    producto.setOfertaActiva(Boolean.TRUE);
+                    producto.setDescuentoCalculado(porcentajeRedondeado);
+                    producto.setPrecioConDescuentoCalculado(precioConDescuento);
+                } else {
+                    producto.setOfertaActiva(Boolean.FALSE);
+                    producto.setDescuentoCalculado(null);
+                    producto.setPrecioConDescuentoCalculado(null);
+                }
+            }
+        } catch (Exception ex) {
+            log.warn("No se pudieron cargar promociones desde msvc-promociones: {}", ex.getMessage());
+        }
     }
 }

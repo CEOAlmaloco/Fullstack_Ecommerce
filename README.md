@@ -19,16 +19,16 @@
 | Microservicio | Puerto | Descripción | Estado |
 |---------------|--------|-------------|---------|
 | `msvc-gateway` | 8094 | API Gateway central | ✅ Completo |
-| `msvc-auth` | 8081 | Autenticación y autorización JWT | ✅ Completo |
-| `msvc-usuario` | 8082 | Gestión de usuarios y perfiles | ✅ Completo |
-| `msvc-productos` | 8083 | Catálogo de productos gaming | ✅ Completo |
-| `msvc-inventario` | 8084 | Control de stock e inventario | ✅ Completo |
+| `msvc-auth` | 8001 | Autenticación y autorización JWT | ✅ Completo |
+| `msvc-usuario` | 8095 | Gestión de usuarios y perfiles | ✅ Completo |
+| `msvc-productos` | 8003 | Catálogo de productos gaming | ✅ Completo |
+| `msvc-inventario` | 8004 | Control de stock e inventario | ✅ Completo |
 | `msvc-pedido` | 8085 | Gestión de pedidos y órdenes | ✅ Completo |
-| `msvc-notificaciones` | 8086 | Sistema de notificaciones multicanal | ✅ Completo |
-| `msvc-carrito` | 8087 | Carrito de compras | ✅ Completo |
-| `msvc-pagos` | 8088 | Procesamiento de pagos | ✅ Completo |
-| `msvc-referidos` | 8089 | Sistema de referidos y gamificación | ✅ Completo |
-| `msvc-resenia` | 8090 | Reseñas y calificaciones | ✅ Completo |
+| `msvc-notificaciones` | 8006 | Sistema de notificaciones multicanal | ✅ Completo |
+| `msvc-carrito` | 8008 | Carrito de compras | ✅ Completo |
+| `msvc-pagos` | 8011 | Procesamiento de pagos | ✅ Completo |
+| `msvc-referidos` | 8005 | Sistema de referidos y gamificación | ✅ Completo |
+| `msvc-resenia` | 8010 | Reseñas y calificaciones | ✅ Completo |
 | `msvc-promociones` | 8091 | Promociones y descuentos | ✅ Completo |
 | `msvc-eventos` | 8092 | Gestión de eventos gaming | ✅ Completo |
 | `msvc-contenido` | 8093 | Contenido educativo y blogs | ✅ Completo |
@@ -185,19 +185,19 @@ sequenceDiagram
 
 | Microservicio | Base de Datos | Tablas Principales |
 |---------------|---------------|-------------------|
-| `msvc-auth` | H2 | tokens, sesiones |
-| `msvc-usuario` | H2 | usuarios, perfiles, preferencias |
-| `msvc-productos` | H2 | productos, categorias, especificaciones |
-| `msvc-inventario` | H2 | stock, movimientos, alertas |
-| `msvc-carrito` | H2 | carritos, items_carrito |
-| `msvc-pedido` | H2 | pedidos, items_pedido, estados |
-| `msvc-pagos` | H2 | pagos, transacciones |
-| `msvc-referidos` | H2 | referencias, puntos, niveles |
-| `msvc-resenia` | H2 | resenias, calificaciones |
-| `msvc-promociones` | H2 | promociones, cupones |
-| `msvc-eventos` | H2 | eventos, participantes |
-| `msvc-contenido` | H2 | articulos, comentarios |
-| `msvc-notificaciones` | H2 | notificaciones, plantillas |
+| `msvc-auth` | PostgreSQL | auth_tokens, sesiones |
+| `msvc-usuario` | PostgreSQL | usuarios, perfiles, preferencias |
+| `msvc-productos` | PostgreSQL | productos, categorias, especificaciones |
+| `msvc-inventario` | PostgreSQL | stock, movimientos, alertas |
+| `msvc-carrito` | PostgreSQL | carritos, items_carrito |
+| `msvc-pedido` | PostgreSQL | pedidos, items_pedido, estados |
+| `msvc-pagos` | PostgreSQL | pagos, transacciones |
+| `msvc-referidos` | PostgreSQL | referencias, puntos, niveles |
+| `msvc-resenia` | PostgreSQL | resenias, calificaciones |
+| `msvc-promociones` | PostgreSQL | promociones, cupones |
+| `msvc-eventos` | PostgreSQL | eventos, participantes |
+| `msvc-contenido` | PostgreSQL | articulos, comentarios |
+| `msvc-notificaciones` | PostgreSQL | notificaciones, plantillas |
 
 ## 🔧 Tecnologías Utilizadas
 
@@ -320,8 +320,8 @@ Frontend → Gateway → Contenido → Usuario → Contenido → Gateway → Fro
 ## 🚀 Instalación y Ejecución
 
 ### Prerrequisitos
-- Java 17+
-- Maven 3.8+
+- Java 21+
+- Maven 3.9+
 - IDE (IntelliJ IDEA, Eclipse, VS Code)
 
 ### Ejecución Local
@@ -337,25 +337,32 @@ cd msvc-usuario && mvn spring-boot:run
 # ... (repetir para cada microservicio)
 ```
 
-### Docker (Opcional)
+### Docker Compose (Entorno local con PostgreSQL)
 ```bash
-# Construir imágenes
-docker-compose build
+# 1. Construir los artefactos (desde la raíz de Backend_Java_Spring/Fullstack_Ecommerce)
+mvn -pl msvc-auth,msvc-usuario,msvc-productos,msvc-inventario,msvc-carrito,msvc-pedido,msvc-pagos,msvc-resenia,msvc-referidos,msvc-promociones,msvc-notificaciones,msvc-eventos,msvc-contenido,msvc-gateway -am clean package -DskipTests
 
-# Ejecutar todos los servicios
-docker-compose up
+# 2. Exportar variables opcionales (JWT_SECRET, S3_BASE_URL, etc.) o editar docker.env del frontend
+
+# 3. Levantar toda la plataforma
+docker compose up --build
+
+# 4. (opcional) Detener y limpiar
+docker compose down -v
 ```
+
+El stack utiliza `postgres:15-alpine` y un script en `docker/postgres/create-multiple-dbs.sh` para crear las bases de datos individuales de cada microservicio. Las propiedades `application-docker.properties` activan Hikari/DDL `update` y CORS locales. Configura el frontend copiando `docker.env` a `.env.local` y ejecutando `npm run dev` o `npm run preview`.
 
 ## 📝 Documentación de APIs
 
 ### Swagger UI
 - **Gateway**: http://localhost:8094/swagger-ui.html
-- **Auth**: http://localhost:8081/swagger-ui.html
-- **Usuario**: http://localhost:8082/swagger-ui.html
-- **Productos**: http://localhost:8083/swagger-ui.html
-- **Carrito**: http://localhost:8087/swagger-ui.html
+- **Auth**: http://localhost:8001/swagger-ui.html
+- **Usuario**: http://localhost:8095/swagger-ui.html
+- **Productos**: http://localhost:8003/swagger-ui.html
+- **Carrito**: http://localhost:8008/swagger-ui.html
 - **Pedido**: http://localhost:8085/swagger-ui.html
-- **Pagos**: http://localhost:8088/swagger-ui.html
+- **Pagos**: http://localhost:8011/swagger-ui.html
 
 ## 🧪 Testing
 

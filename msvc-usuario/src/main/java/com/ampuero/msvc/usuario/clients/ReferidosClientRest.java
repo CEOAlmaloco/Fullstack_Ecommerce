@@ -14,7 +14,7 @@ import java.util.Map;
  * Cliente Feign para comunicación con msvc-referidos
  * Permite gestionar el sistema de referidos y gamificación
  */
-@FeignClient(name = "msvc-referidos", url = "localhost:8005")
+@FeignClient(name = "msvc-referidos", url = "${MSVC_REFERIDOS_URL:http://localhost:8005}")
 public interface ReferidosClientRest {
 
     /**

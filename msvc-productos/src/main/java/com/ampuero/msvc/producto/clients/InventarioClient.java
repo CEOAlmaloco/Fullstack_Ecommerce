@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
 
-@FeignClient(name = "msvc-inventario", url = "http://localhost:8004/api/v1")
+@FeignClient(name = "msvc-inventario", url = "${MSVC_INVENTARIO_API_URL:http://localhost:8004/api/v1}")
 public interface InventarioClient {
 
     @GetMapping("/inventario/producto/{productoId}")

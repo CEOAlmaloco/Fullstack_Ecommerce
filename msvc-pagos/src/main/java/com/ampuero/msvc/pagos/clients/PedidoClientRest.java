@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
 
-@FeignClient(name = "msvc-pedido", url = "localhost:8085")
+@FeignClient(name = "msvc-pedido", url = "${MSVC_PEDIDO_URL:http://localhost:8085}")
 public interface PedidoClientRest {
 
     @GetMapping("/pedidos/{id}")

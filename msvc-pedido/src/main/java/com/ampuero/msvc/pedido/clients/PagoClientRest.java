@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
 
-@FeignClient(name = "msvc-pagos", url = "localhost:8011")
+@FeignClient(name = "msvc-pagos", url = "${MSVC_PAGOS_URL:http://localhost:8011}")
 public interface PagoClientRest {
 
     @PostMapping("/pagos")

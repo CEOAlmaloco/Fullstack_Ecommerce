@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/notificaciones")
-@CrossOrigin(origins = "*")
 public class NotificacionController {
 
     @Autowired

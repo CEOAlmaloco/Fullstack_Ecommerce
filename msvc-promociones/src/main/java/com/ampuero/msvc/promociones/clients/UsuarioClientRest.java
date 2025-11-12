@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
 
-@FeignClient(name = "msvc-usuario", url = "localhost:8082")
+@FeignClient(name = "msvc-usuario", url = "${MSVC_USUARIO_URL:http://localhost:8095}")
 public interface UsuarioClientRest {
 
     @GetMapping("/usuarios/{id}")

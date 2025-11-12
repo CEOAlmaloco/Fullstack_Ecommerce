@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.Map;
 
-@FeignClient(name = "msvc-productos", url = "localhost:8083")
+@FeignClient(name = "msvc-productos", url = "${MSVC_PRODUCTOS_URL:http://localhost:8003}")
 public interface ProductoClientRest {
 
     @GetMapping("/productos/{id}")

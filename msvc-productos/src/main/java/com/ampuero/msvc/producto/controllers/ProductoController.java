@@ -36,7 +36,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/productos")
 @Validated
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "http://localhost:3000", "http://10.0.2.2:8094"})
 @Tag(name = "Producto API",
         description = "Aqui se generan todos los metodos crud para producto")
 public class ProductoController {

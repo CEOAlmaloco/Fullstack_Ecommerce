@@ -11,7 +11,7 @@ import java.util.Map;
  * Cliente Feign para comunicación con msvc-notificaciones
  * Permite enviar notificaciones relacionadas con usuarios
  */
-@FeignClient(name = "msvc-notificaciones", url = "localhost:8006")
+@FeignClient(name = "msvc-notificaciones", url = "${MSVC_NOTIFICACIONES_URL:http://localhost:8006}")
 public interface NotificacionClientRest {
 
     /**

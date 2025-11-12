@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
 
-@FeignClient(name = "msvc-notificaciones", url = "localhost:8086")
+@FeignClient(name = "msvc-notificaciones", url = "${MSVC_NOTIFICACIONES_URL:http://localhost:8006}")
 public interface NotificacionClientRest {
 
     @PostMapping("/notificaciones")

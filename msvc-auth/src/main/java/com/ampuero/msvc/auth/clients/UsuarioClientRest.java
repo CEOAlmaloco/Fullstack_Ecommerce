@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "msvc-usuario", url = "localhost:8095")
+@FeignClient(name = "msvc-usuario", url = "${MSVC_USUARIO_URL:http://localhost:8095}")
 public interface UsuarioClientRest {
 
     @PostMapping("/api/v1/usuarios/validate-credentials")

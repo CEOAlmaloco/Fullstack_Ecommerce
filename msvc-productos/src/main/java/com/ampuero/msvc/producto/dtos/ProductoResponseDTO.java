@@ -36,6 +36,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.hateoas.RepresentationModel;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -92,6 +94,48 @@ public class ProductoResponseDTO extends RepresentationModel<ProductoResponseDTO
     @Schema(description = "ID del producto (alias de idProducto)", example = "1")
     private Long id;
 
+    @Schema(description = "Calificación promedio del producto", example = "4.5")
+    private Double rating;
+
+    @Schema(description = "Calificación calculada a partir de reseñas del microservicio de reseñas", example = "4.7")
+    private Double ratingPromedio;
+
+    @Schema(description = "Reseñas asociadas al producto")
+    private List<ReseniaResumenDTO> reviews;
+
+    @Schema(description = "Indica si el producto se encuentra con promoción activa", example = "true")
+    private Boolean enOferta;
+
+    @Schema(description = "Porcentaje de descuento aplicable", example = "5")
+    private Double descuento;
+
+    @Schema(description = "Precio final con descuento aplicado", example = "522490.5")
+    private Double precioConDescuento;
+
+    @Schema(description = "Marca o fabricante reportado por el microservicio", example = "Sony")
+    private String fabricante;
+
+    @Schema(description = "Distribuidor oficial del producto", example = "Level-Up Gamer")
+    private String distribuidor;
+
+    @Schema(description = "Bandera para destacar el producto en catálogos", example = "true")
+    private Boolean destacado;
+
+    @Schema(description = "Identificador de la categoría asociada", example = "CO")
+    private String categoriaId;
+
+    @Schema(description = "Nombre legible de la categoría", example = "Consola")
+    private String categoriaNombre;
+
+    @Schema(description = "Identificador de la subcategoría asociada", example = "MA")
+    private String subcategoriaId;
+
+    @Schema(description = "Nombre legible de la subcategoría", example = "Mandos")
+    private String subcategoriaNombre;
+
+    @Schema(description = "Código interno del producto", example = "CO001")
+    private String codigoProducto;
+
     // Getters para compatibilidad con frontend
     public String getTitulo() {
         return titulo != null ? titulo : nombreProducto;
@@ -127,5 +171,53 @@ public class ProductoResponseDTO extends RepresentationModel<ProductoResponseDTO
     public void setId(Long id) {
         this.id = id;
         this.idProducto = id;
+    }
+
+    public List<ReseniaResumenDTO> getReviews() {
+        return reviews == null ? Collections.emptyList() : reviews;
+    }
+
+    public void setReviews(List<ReseniaResumenDTO> reviews) {
+        this.reviews = reviews == null ? Collections.emptyList() : reviews;
+    }
+
+    public String getCategoriaId() {
+        return categoriaId;
+    }
+
+    public void setCategoriaId(String categoriaId) {
+        this.categoriaId = categoriaId;
+    }
+
+    public String getCategoriaNombre() {
+        return categoriaNombre;
+    }
+
+    public void setCategoriaNombre(String categoriaNombre) {
+        this.categoriaNombre = categoriaNombre;
+    }
+
+    public String getSubcategoriaId() {
+        return subcategoriaId;
+    }
+
+    public void setSubcategoriaId(String subcategoriaId) {
+        this.subcategoriaId = subcategoriaId;
+    }
+
+    public String getSubcategoriaNombre() {
+        return subcategoriaNombre;
+    }
+
+    public void setSubcategoriaNombre(String subcategoriaNombre) {
+        this.subcategoriaNombre = subcategoriaNombre;
+    }
+
+    public String getCodigoProducto() {
+        return codigoProducto;
+    }
+
+    public void setCodigoProducto(String codigoProducto) {
+        this.codigoProducto = codigoProducto;
     }
 } 

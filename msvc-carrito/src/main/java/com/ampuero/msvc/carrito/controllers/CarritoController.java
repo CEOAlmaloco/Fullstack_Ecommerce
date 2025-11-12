@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/carrito")
-@CrossOrigin(origins = "*")
 public class CarritoController {
 
     @Autowired
