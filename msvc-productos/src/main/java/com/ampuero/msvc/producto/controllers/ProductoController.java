@@ -19,6 +19,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +42,8 @@ import java.util.List;
 @Tag(name = "Producto API",
         description = "Aqui se generan todos los metodos crud para producto")
 public class ProductoController {
+
+    private static final Logger log = LoggerFactory.getLogger(ProductoController.class);
 
     @Autowired
     private ProductoService productoService;
@@ -66,12 +70,22 @@ public class ProductoController {
     })
     public ResponseEntity<List<ProductoResponseDTO>> traerTodos() {
         try {
+            log.info("GET /productos - Iniciando obtención de todos los productos");
             List<Producto> productos = productoService.traerTodo();
+            log.info("GET /productos - Productos obtenidos del servicio: {}", productos.size());
+            
             List<ProductoResponseDTO> productosDTO = productoMapper.toDTOList(productos);
+            log.info("GET /productos - Productos mapeados a DTO: {}", productosDTO.size());
+            
+            if (productosDTO.isEmpty()) {
+                log.warn("GET /productos - ADVERTENCIA: No se encontraron productos. Verificar inicialización de BD.");
+            }
+            
             return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(productosDTO);
         } catch (Exception ex) {
+            log.error("GET /productos - Error al obtener productos: {}", ex.getMessage(), ex);
             return ResponseEntity.status(HttpStatus.OK).body(java.util.Collections.emptyList());
         }
     }
