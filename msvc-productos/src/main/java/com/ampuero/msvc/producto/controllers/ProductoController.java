@@ -7,6 +7,7 @@ import com.ampuero.msvc.producto.models.Producto;
 import com.ampuero.msvc.producto.services.ImageBase64Service;
 import com.ampuero.msvc.producto.services.ProductoMapper;
 import com.ampuero.msvc.producto.services.ProductoService;
+import com.ampuero.msvc.producto.services.S3Service;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -48,6 +49,9 @@ public class ProductoController {
 
     @Autowired
     private ProductoMapper productoMapper;
+
+    @Autowired
+    private S3Service s3Service;
 
     // GET: Traer todos los productos
     @GetMapping
@@ -288,40 +292,49 @@ public class ProductoController {
 
     // GET: Obtener imágenes del carrusel
     @GetMapping("/carrusel")
-    @Operation(summary = "Obtener imágenes del carrusel", description = "Devuelve las imágenes del carrusel en Base64")
+    @Operation(summary = "Obtener imágenes del carrusel", description = "Devuelve las imágenes del carrusel como URLs de S3")
     @ApiResponse(responseCode = "200", description = "Imágenes del carrusel obtenidas correctamente")
     public ResponseEntity<List<java.util.Map<String, String>>> obtenerImagenesCarrusel() {
         try {
             java.util.List<java.util.Map<String, String>> carrusel = new java.util.ArrayList<>();
             
             // Imagen 1: Carrusel principal
-            String imagen1 = imageBase64Service.convertImageToBase64("img/carrusel.png");
-            if (imagen1 == null) {
-                imagen1 = imageBase64Service.convertImageToBase64("img/play5white.png"); // Fallback
+            String imagen1Key = "img/carrusel.png";
+            String imagen1Url = s3Service.buildS3Url(imagen1Key);
+            if (imagen1Url == null || imagen1Url.isEmpty()) {
+                imagen1Url = s3Service.buildS3Url("img/play5white.png"); // Fallback
             }
             java.util.Map<String, String> item1 = new java.util.HashMap<>();
             item1.put("id", "1");
-            item1.put("url", imagen1 != null ? imagen1 : "");
+            item1.put("url", imagen1Url != null ? imagen1Url : "");
+            item1.put("titulo", "¡Bienvenido a Level-Up Gamer!");
             item1.put("nombre", "¡Bienvenido a Level-Up Gamer!");
             item1.put("descripcion", "La tienda gamer lider en todo Chile");
+            item1.put("enlace", "");
             carrusel.add(item1);
 
             // Imagen 2: Productos
-            String imagen2 = imageBase64Service.convertImageToBase64("img/play5white.png");
+            String imagen2Key = "img/play5white.png";
+            String imagen2Url = s3Service.buildS3Url(imagen2Key);
             java.util.Map<String, String> item2 = new java.util.HashMap<>();
             item2.put("id", "2");
-            item2.put("url", imagen2 != null ? imagen2 : "");
+            item2.put("url", imagen2Url != null ? imagen2Url : "");
+            item2.put("titulo", "!Explora nuestros productos gamer de alta calidad!");
             item2.put("nombre", "!Explora nuestros productos gamer de alta calidad!");
             item2.put("descripcion", "Tenemos una gama alta de productos para ti y tu amor por el gaming");
+            item2.put("enlace", "");
             carrusel.add(item2);
 
             // Imagen 3: Blogs
-            String imagen3 = imageBase64Service.convertImageToBase64("img/monitorasus.png");
+            String imagen3Key = "img/monitorasus.png";
+            String imagen3Url = s3Service.buildS3Url(imagen3Key);
             java.util.Map<String, String> item3 = new java.util.HashMap<>();
             item3.put("id", "3");
-            item3.put("url", imagen3 != null ? imagen3 : "");
+            item3.put("url", imagen3Url != null ? imagen3Url : "");
+            item3.put("titulo", "¡Lee desde noticias a guias del mundo gaming!");
             item3.put("nombre", "¡Lee desde noticias a guias del mundo gaming!");
             item3.put("descripcion", "Con nuestros blogs estarás atento a todo");
+            item3.put("enlace", "");
             carrusel.add(item3);
 
             return ResponseEntity.ok(carrusel);
@@ -332,16 +345,17 @@ public class ProductoController {
 
     // GET: Obtener logo
     @GetMapping("/logo")
-    @Operation(summary = "Obtener logo", description = "Devuelve el logo en Base64")
+    @Operation(summary = "Obtener logo", description = "Devuelve el logo como URL de S3")
     @ApiResponse(responseCode = "200", description = "Logo obtenido correctamente")
     public ResponseEntity<java.util.Map<String, String>> obtenerLogo() {
         try {
-            String logo = imageBase64Service.convertImageToBase64("img/logo.png");
-            if (logo == null) {
-                logo = ""; // Si no hay logo, retornar string vacío
+            String logoKey = "img/logo.png";
+            String logoUrl = s3Service.buildS3Url(logoKey);
+            if (logoUrl == null || logoUrl.isEmpty()) {
+                logoUrl = ""; // Si no hay logo, retornar string vacío
             }
             java.util.Map<String, String> response = new java.util.HashMap<>();
-            response.put("url", logo);
+            response.put("url", logoUrl);
             response.put("alt", "Logo Level Up");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
