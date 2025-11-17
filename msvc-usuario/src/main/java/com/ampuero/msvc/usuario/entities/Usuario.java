@@ -47,8 +47,8 @@ public class Usuario {
     private String runUsuario;
 
     @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 4, max = 10, message = "La contraseña debe tener entre 4 y 10 caracteres")
-    @Column(name = "password", nullable = false)
+    @Size(min = 4, max = 128, message = "La contraseña debe tener entre 4 y 128 caracteres")
+    @Column(name = "password", nullable = false, length = 255)
     private String password;
 
     @Column(name = "telefono", length = 20)
