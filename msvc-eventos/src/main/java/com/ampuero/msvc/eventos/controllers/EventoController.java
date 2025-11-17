@@ -5,6 +5,7 @@ import com.ampuero.msvc.eventos.dtos.EventoEstadoDTO;
 import com.ampuero.msvc.eventos.dtos.EventoResponseDTO;
 import com.ampuero.msvc.eventos.models.Evento;
 import com.ampuero.msvc.eventos.services.EventoService;
+import com.ampuero.msvc.eventos.services.S3Service;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +28,9 @@ public class EventoController {
 
     @Autowired
     private EventoService eventoService;
+    
+    @Autowired
+    private S3Service s3Service;
     
     @Value("${jwt.secret:levelUpGamerSecretKey2024}")
     private String jwtSecret;
@@ -328,7 +332,29 @@ public class EventoController {
         response.setRequisitosEdad(evento.getRequisitosEdad());
         response.setEquiposRequeridos(evento.getEquiposRequeridos());
         response.setCiudad(evento.getCiudad());
-        response.setImagen(evento.getImagen());
+        
+        // Todos los eventos usan la imagen evento.jpg de S3
+        // Convertir imagen Base64 a URL de S3
+        String imagenOriginal = evento.getImagen();
+        String imagenUrlS3 = "https://levelup-gamer-products.s3.us-east-1.amazonaws.com/img/evento.jpg";
+        
+        if (imagenOriginal != null && !imagenOriginal.isEmpty()) {
+            // Si es Base64, usar la URL de evento.jpg de S3
+            if (imagenOriginal.startsWith("data:image")) {
+                response.setImagenUrl(imagenUrlS3);
+                response.setImagen(""); // Limpiar Base64, usar solo URL de S3
+            } else {
+                // Si es una key de S3, construir la URL
+                String imagenUrl = s3Service.buildS3Url(imagenOriginal);
+                response.setImagenUrl(imagenUrl != null ? imagenUrl : imagenUrlS3);
+                response.setImagen(imagenOriginal);
+            }
+        } else {
+            // Si no hay imagen, usar la URL por defecto de evento.jpg
+            response.setImagenUrl(imagenUrlS3);
+            response.setImagen("");
+        }
+        
         response.setImagenes(evento.getImagenes());
         return response;
     }

@@ -27,6 +27,10 @@ public class EventoResponseDTO {
     private String imagen;
     private String imagenes;
     
+    // Campos adicionales para URLs de S3
+    private String imagenUrl;
+    private String bannerUrl;
+    
     // Campos adicionales para compatibilidad con Kotlin
     // id: String (alias de idEvento)
     public String getId() {

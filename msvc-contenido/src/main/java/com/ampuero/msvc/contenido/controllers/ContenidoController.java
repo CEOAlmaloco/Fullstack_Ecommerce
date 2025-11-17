@@ -8,6 +8,7 @@ import com.ampuero.msvc.contenido.dtos.ComentarioResponseDTO;
 import com.ampuero.msvc.contenido.models.Articulo;
 import com.ampuero.msvc.contenido.models.Comentario;
 import com.ampuero.msvc.contenido.services.ContenidoService;
+import com.ampuero.msvc.contenido.services.S3Service;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,9 @@ public class ContenidoController {
 
     @Autowired
     private ContenidoService contenidoService;
+    
+    @Autowired
+    private S3Service s3Service;
 
     // ========== ENDPOINTS DE ARTÍCULOS ==========
 
@@ -398,7 +402,44 @@ public class ContenidoController {
         response.setTituloArticulo(articulo.getTituloArticulo());
         response.setContenidoArticulo(articulo.getContenidoArticulo());
         response.setResumenArticulo(articulo.getResumenArticulo());
-        response.setImagenArticulo(articulo.getImagenArticulo());
+        
+        // Convertir imagen Base64 a URL de S3 si es necesario
+        String imagenOriginal = articulo.getImagenArticulo();
+        if (imagenOriginal != null && !imagenOriginal.isEmpty()) {
+            // Si es Base64, usar URLs de S3 según la categoría
+            if (imagenOriginal.startsWith("data:image")) {
+                String categoria = articulo.getCategoriaArticulo();
+                String imagenUrl;
+                if ("TECNOLOGIA".equals(categoria) || "NOTICIAS".equals(categoria)) {
+                    // Realidad Virtual o noticias -> ralidadv.jfif
+                    imagenUrl = "https://levelup-gamer-products.s3.us-east-1.amazonaws.com/img/ralidadv.jfif";
+                } else if ("LANZAMIENTOS".equals(categoria)) {
+                    // Juegos esperados -> juegos_esperados.jpg
+                    imagenUrl = "https://levelup-gamer-products.s3.us-east-1.amazonaws.com/img/juegos_esperados.jpg";
+                } else {
+                    // Por defecto -> evento.jpg
+                    imagenUrl = "https://levelup-gamer-products.s3.us-east-1.amazonaws.com/img/evento.jpg";
+                }
+                response.setImagenArticulo(imagenUrl);
+            } else {
+                // Si es una key de S3, construir la URL
+                String imagenUrl = s3Service.buildS3Url(imagenOriginal);
+                response.setImagenArticulo(imagenUrl != null ? imagenUrl : imagenOriginal);
+            }
+        } else {
+            // Si no hay imagen, usar la URL por defecto según categoría
+            String categoria = articulo.getCategoriaArticulo();
+            String imagenUrl;
+            if ("TECNOLOGIA".equals(categoria) || "NOTICIAS".equals(categoria)) {
+                imagenUrl = "https://levelup-gamer-products.s3.us-east-1.amazonaws.com/img/ralidadv.jfif";
+            } else if ("LANZAMIENTOS".equals(categoria)) {
+                imagenUrl = "https://levelup-gamer-products.s3.us-east-1.amazonaws.com/img/juegos_esperados.jpg";
+            } else {
+                imagenUrl = "https://levelup-gamer-products.s3.us-east-1.amazonaws.com/img/evento.jpg";
+            }
+            response.setImagenArticulo(imagenUrl);
+        }
+        
         response.setCategoriaArticulo(articulo.getCategoriaArticulo());
         response.setEtiquetasArticulo(articulo.getEtiquetasArticulo());
         response.setAutorArticulo(articulo.getAutorArticulo());

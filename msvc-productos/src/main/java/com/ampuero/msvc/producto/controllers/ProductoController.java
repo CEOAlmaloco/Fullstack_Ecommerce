@@ -312,36 +312,33 @@ public class ProductoController {
         try {
             java.util.List<java.util.Map<String, String>> carrusel = new java.util.ArrayList<>();
             
-            // Imagen 1: Carrusel noticias
-            String imagen1Key = "img/carruselnoticias.png";
-            String imagen1Url = s3Service.buildS3Url(imagen1Key);
+            // Imagen 1: Realidad Virtual (ralidadv.jfif)
+            String imagen1Url = "https://levelup-gamer-products.s3.us-east-1.amazonaws.com/img/ralidadv.jfif";
             java.util.Map<String, String> item1 = new java.util.HashMap<>();
             item1.put("id", "1");
-            item1.put("url", imagen1Url != null ? imagen1Url : "");
+            item1.put("url", imagen1Url);
             item1.put("titulo", "¡Bienvenido a Level-Up Gamer!");
             item1.put("nombre", "¡Bienvenido a Level-Up Gamer!");
             item1.put("descripcion", "La tienda gamer lider en todo Chile");
             item1.put("enlace", "");
             carrusel.add(item1);
 
-            // Imagen 2: Carrusel productos
-            String imagen2Key = "img/carruselproductos.png";
-            String imagen2Url = s3Service.buildS3Url(imagen2Key);
+            // Imagen 2: Juegos Esperados (juegos_esperados.jpg)
+            String imagen2Url = "https://levelup-gamer-products.s3.us-east-1.amazonaws.com/img/juegos_esperados.jpg";
             java.util.Map<String, String> item2 = new java.util.HashMap<>();
             item2.put("id", "2");
-            item2.put("url", imagen2Url != null ? imagen2Url : "");
+            item2.put("url", imagen2Url);
             item2.put("titulo", "¡Explora nuestros productos gamer de alta calidad!");
             item2.put("nombre", "¡Explora nuestros productos gamer de alta calidad!");
             item2.put("descripcion", "Tenemos una gama alta de productos para ti y tu amor por el gaming");
             item2.put("enlace", "");
             carrusel.add(item2);
 
-            // Imagen 3: Carrusel productos (segunda vez - verificar si es diferente)
-            String imagen3Key = "img/carruselproductos.png";
-            String imagen3Url = s3Service.buildS3Url(imagen3Key);
+            // Imagen 3: Eventos (evento.jpg)
+            String imagen3Url = "https://levelup-gamer-products.s3.us-east-1.amazonaws.com/img/evento.jpg";
             java.util.Map<String, String> item3 = new java.util.HashMap<>();
             item3.put("id", "3");
-            item3.put("url", imagen3Url != null ? imagen3Url : "");
+            item3.put("url", imagen3Url);
             item3.put("titulo", "¡Lee desde noticias a guias del mundo gaming!");
             item3.put("nombre", "¡Lee desde noticias a guias del mundo gaming!");
             item3.put("descripcion", "Con nuestros blogs estarás atento a todo");
