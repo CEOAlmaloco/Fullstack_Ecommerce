@@ -60,6 +60,35 @@ public class UsuarioServiceImpl implements UsuarioService {
         Usuario usuario = new Usuario();
         BeanUtils.copyProperties(usuarioCreationDTO, usuario);
 
+        // Establecer valores por defecto para campos obligatorios que pueden ser null
+        if (usuario.getTipoUsuario() == null) {
+            usuario.setTipoUsuario(Usuario.TipoUsuario.CLIENTE);
+        }
+        if (usuario.getEstado() == null) {
+            usuario.setEstado(Usuario.EstadoUsuario.ACTIVO);
+        }
+        if (usuario.getFechaRegistro() == null) {
+            usuario.setFechaRegistro(LocalDateTime.now());
+        }
+        if (usuario.getEmailVerificado() == null) {
+            usuario.setEmailVerificado(false);
+        }
+        if (usuario.getTelefonoVerificado() == null) {
+            usuario.setTelefonoVerificado(false);
+        }
+        if (usuario.getAceptaTerminos() == null) {
+            usuario.setAceptaTerminos(usuarioCreationDTO.getAceptaTerminos() != null ? usuarioCreationDTO.getAceptaTerminos() : false);
+        }
+        if (usuario.getAceptaMarketing() == null) {
+            usuario.setAceptaMarketing(usuarioCreationDTO.getAceptaMarketing() != null ? usuarioCreationDTO.getAceptaMarketing() : false);
+        }
+        if (usuario.getPuntosLevelUp() == null) {
+            usuario.setPuntosLevelUp(0);
+        }
+        if (usuario.getNivelUsuario() == null) {
+            usuario.setNivelUsuario(Usuario.NivelUsuario.NOVATO);
+        }
+
         // Encriptar contraseña
         usuario.setPassword(passwordEncoder.encode(usuarioCreationDTO.getPassword()));
 

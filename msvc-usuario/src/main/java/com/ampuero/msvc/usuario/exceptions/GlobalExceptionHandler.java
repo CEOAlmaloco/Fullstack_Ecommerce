@@ -8,6 +8,9 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.time.LocalDate;
 import java.util.Collections;
@@ -146,5 +149,62 @@ public class GlobalExceptionHandler {
         
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(this.createErrorDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), localDate, errorMap));
+    }
+
+    /**
+     * Maneja errores de validación de JPA/Hibernate (ConstraintViolationException)
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorDTO> handleConstraintViolation(ConstraintViolationException ex) {
+        Map<String, String> errorMap = new HashMap<>();
+        LocalDate localDate = LocalDate.now();
+        
+        for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
+            String propertyPath = violation.getPropertyPath().toString();
+            String message = violation.getMessage();
+            errorMap.put(propertyPath, message);
+        }
+        
+        // Si no hay errores específicos, agregar mensaje genérico
+        if (errorMap.isEmpty()) {
+            errorMap.put("error", "Error de validación: " + ex.getMessage());
+        }
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(this.createErrorDTO(HttpStatus.BAD_REQUEST.value(), localDate, errorMap));
+    }
+
+    /**
+     * Maneja errores de integridad de datos (violaciones de constraints de BD)
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorDTO> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        Map<String, String> errorMap = new HashMap<>();
+        LocalDate localDate = LocalDate.now();
+        
+        String message = ex.getMessage();
+        if (message != null) {
+            // Intentar extraer información útil del mensaje
+            if (message.contains("duplicate key") || message.contains("UNIQUE constraint")) {
+                if (message.contains("correo") || message.contains("email")) {
+                    errorMap.put("correo", "Ya existe un usuario con este correo electrónico");
+                } else if (message.contains("run") || message.contains("RUN")) {
+                    errorMap.put("runUsuario", "Ya existe un usuario con este RUN");
+                } else if (message.contains("codigo_referido")) {
+                    errorMap.put("codigoReferido", "Ya existe un usuario con este código de referido");
+                } else {
+                    errorMap.put("error", "Ya existe un registro con estos datos");
+                }
+            } else if (message.contains("NOT NULL constraint")) {
+                errorMap.put("error", "Faltan campos obligatorios: " + message);
+            } else {
+                errorMap.put("error", "Error de integridad de datos: " + message);
+            }
+        } else {
+            errorMap.put("error", "Error de integridad de datos");
+        }
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(this.createErrorDTO(HttpStatus.BAD_REQUEST.value(), localDate, errorMap));
     }
 }
