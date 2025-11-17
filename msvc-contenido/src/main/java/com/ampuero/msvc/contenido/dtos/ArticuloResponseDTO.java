@@ -12,6 +12,7 @@ public class ArticuloResponseDTO {
     private String contenidoArticulo;
     private String resumenArticulo;
     private String imagenArticulo;
+    private String imagenUrl;  // Campo adicional para compatibilidad con Kotlin (URL completa de S3)
     private String categoriaArticulo;
     private String etiquetasArticulo;
     private String autorArticulo;
@@ -47,9 +48,10 @@ public class ArticuloResponseDTO {
         return resumenArticulo;
     }
     
-    // imagenUrl: String (alias de imagenArticulo)
+    // imagenUrl: String (campo adicional para compatibilidad con Kotlin)
+    // El getter ahora devuelve el campo imagenUrl si está setado, sino imagenArticulo
     public String getImagenUrl() {
-        return imagenArticulo;
+        return imagenUrl != null ? imagenUrl : imagenArticulo;
     }
     
     // categoria: String (alias de categoriaArticulo)

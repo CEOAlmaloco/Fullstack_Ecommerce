@@ -421,10 +421,13 @@ public class ContenidoController {
                     imagenUrl = "https://levelup-gamer-products.s3.us-east-1.amazonaws.com/img/evento.jpg";
                 }
                 response.setImagenArticulo(imagenUrl);
+                response.setImagenUrl(imagenUrl);  // También setear imagenUrl para Kotlin
             } else {
                 // Si es una key de S3, construir la URL
                 String imagenUrl = s3Service.buildS3Url(imagenOriginal);
-                response.setImagenArticulo(imagenUrl != null ? imagenUrl : imagenOriginal);
+                String finalUrl = imagenUrl != null ? imagenUrl : imagenOriginal;
+                response.setImagenArticulo(finalUrl);
+                response.setImagenUrl(finalUrl);  // También setear imagenUrl para Kotlin
             }
         } else {
             // Si no hay imagen, usar la URL por defecto según categoría
@@ -438,6 +441,7 @@ public class ContenidoController {
                 imagenUrl = "https://levelup-gamer-products.s3.us-east-1.amazonaws.com/img/evento.jpg";
             }
             response.setImagenArticulo(imagenUrl);
+            response.setImagenUrl(imagenUrl);  // También setear imagenUrl para Kotlin
         }
         
         response.setCategoriaArticulo(articulo.getCategoriaArticulo());
