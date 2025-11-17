@@ -154,28 +154,51 @@ public class AuthServiceImpl implements AuthService {
                 }
             }
 
-            usuarioData.put("region", registerRequest.getRegion());
-            usuarioData.put("comuna", registerRequest.getComuna());
-            usuarioData.put("direccion", registerRequest.getDireccionUsuario() != null ? registerRequest.getDireccionUsuario() : "");
-            usuarioData.put("ciudad", registerRequest.getComuna()); // Usar comuna como ciudad
+            // Solo agregar campos opcionales si tienen valor
+            if (registerRequest.getRegion() != null && !registerRequest.getRegion().trim().isEmpty()) {
+                usuarioData.put("region", registerRequest.getRegion().trim());
+            }
+            if (registerRequest.getComuna() != null && !registerRequest.getComuna().trim().isEmpty()) {
+                usuarioData.put("comuna", registerRequest.getComuna().trim());
+                usuarioData.put("ciudad", registerRequest.getComuna().trim()); // Usar comuna como ciudad
+            }
+            if (registerRequest.getDireccionUsuario() != null && !registerRequest.getDireccionUsuario().trim().isEmpty()) {
+                usuarioData.put("direccion", registerRequest.getDireccionUsuario().trim());
+            }
             if (registerRequest.getCodigoReferido() != null && !registerRequest.getCodigoReferido().isEmpty()) {
                 usuarioData.put("referidoPor", registerRequest.getCodigoReferido());
             }
             usuarioData.put("aceptaTerminos", Boolean.TRUE);
             usuarioData.put("aceptaMarketing", registerRequest.getAceptaMarketing() != null ? registerRequest.getAceptaMarketing() : Boolean.FALSE);
             
-            // Parsear fecha de nacimiento
+            // Parsear fecha de nacimiento - enviar como String en formato ISO (YYYY-MM-DD)
+            // Spring Boot deserializará automáticamente a LocalDate en el DTO
             if (registerRequest.getFechaNacimiento() != null && !registerRequest.getFechaNacimiento().isEmpty()) {
                 try {
                     java.time.LocalDate fechaNac = java.time.LocalDate.parse(registerRequest.getFechaNacimiento());
+                    // Enviar como String en formato ISO para que Spring lo deserialice correctamente
                     usuarioData.put("fechaNacimiento", fechaNac.toString());
                 } catch (Exception e) {
                     log.warn("Error parseando fecha de nacimiento: {}", registerRequest.getFechaNacimiento());
+                    // No agregar fechaNacimiento si hay error en el parseo
                 }
             }
 
+            // Log de los datos que se envían (sin password)
+            java.util.Map<String, Object> logData = new java.util.HashMap<>(usuarioData);
+            logData.remove("password");
+            log.info("Registrando usuario en msvc-usuario con datos: {}", logData);
+            
             // Registrar usuario en msvc-usuario
-            usuarioClient.registrarUsuario(usuarioData);
+            try {
+                usuarioClient.registrarUsuario(usuarioData);
+            } catch (feign.FeignException.BadRequest e) {
+                log.error("Error 400 al registrar usuario. Respuesta: {}", e.contentUTF8());
+                throw new AuthException("Error de validación en registro: " + e.contentUTF8());
+            } catch (feign.FeignException e) {
+                log.error("Error al registrar usuario. Status: {}, Respuesta: {}", e.status(), e.contentUTF8());
+                throw new AuthException("Error en registro de usuario: " + e.contentUTF8());
+            }
 
             // Auto-login después del registro
             LoginRequestDTO loginRequest = new LoginRequestDTO();
