@@ -68,10 +68,17 @@ public class MsvcGatewayApplication {
 
                 // Inventory Service
                 .route("msvc-inventario", r -> r.path("/inventario/**")
+                        .filters(f -> f.rewritePath("/inventario(?<path>.*)", "/api/v1/inventario${path}"))
                         .uri(inventarioServiceUrl))
 
                 // Referral Service
                 .route("msvc-referidos", r -> r.path("/referidos/**")
+                        .filters(f -> f.rewritePath("/referidos(?<path>.*)", "/api/v1/referidos${path}"))
+                        .uri(referidosServiceUrl))
+
+                // Referral Points Service (puntos)
+                .route("msvc-referidos-puntos", r -> r.path("/puntos/**")
+                        .filters(f -> f.stripPrefix(1).prefixPath("/api/v1/puntos"))
                         .uri(referidosServiceUrl))
 
                 // Review Service - Rutea /resenias/** a /api/v1/resenias/** en el microservicio

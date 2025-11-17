@@ -1,105 +1,88 @@
-# Solución: Mapeo de Rutas de Imágenes
+# Solución: Rutas de Imágenes Antiguas
 
 ## Problema
 
-Las rutas de imágenes en la base de datos (`"./img/consolas/4.png"`) no coinciden con los archivos reales en `resources/static/img/` (no hay carpetas `consolas/`, `polerones/`, etc.).
+El backend sigue devolviendo rutas antiguas como:
+- `img/consolas/2.png` ❌
+- `img/perifericos/1.png` ❌
 
-## Solución Implementada
+En lugar de las rutas nuevas:
+- `img/play4.png` ✅
+- `img/audilogitech.png` ✅
 
-Se creó un servicio `ImagePathMapper` que mapea rutas incorrectas a rutas correctas:
+## Solución Rápida
 
-### Mapeo de Rutas
+### Paso 1: Verificar qué Base de Datos está usando el Backend
 
-- `img/consolas/4.png` → `img/play5white.png` (PlayStation 5)
-- `img/consolas/1.png` → `img/play5white.png` (PlayStation 5)
-- `img/consolas/2.png` → `img/play4.png` (PlayStation 4 Slim)
-- `img/consolas/3.png` → `img/mandoplay.png` (DualShock 4)
-- `img/polerones/4.png` → `img/poleronplay.png` (Poleron PlayStation Retro Negro)
-- Y más...
-
-## Pasos para Aplicar la Solución
-
-### 1. Reiniciar el Microservicio
+En AWS, ejecuta:
 
 ```bash
-cd Backend_Java_Spring/Fullstack_Ecommerce/msvc-productos
-mvn spring-boot:run
+# Ver las variables de entorno del proceso Java
+ps aux | grep java | grep msvc-productos | head -1
+
+# O verificar en los logs al inicio (busca "datasource" o "h2" o "postgres")
+grep -i "datasource\|h2\|postgres" msvc-productos/productos.log | head -5
 ```
 
-### 2. Verificar los Logs
+### Paso 2A: Si usa H2 (más probable en desarrollo)
 
-Deberías ver mensajes como:
+1. Abre en el navegador: `http://44.209.152.110:8003/h2-console`
+2. Credenciales:
+   - **JDBC URL**: `jdbc:h2:file:./data/msvc_productos_dev`
+   - **Usuario**: `sa`
+   - **Password**: (vacío)
+3. Ejecuta el script `verificar_y_actualizar_rutas.sql`
 
-```
-Iniciando conversión de imágenes a Base64 para productos existentes
-Ruta mapeada: ./img/consolas/4.png -> img/play5white.png
-Imagen principal convertida a Base64: ./img/consolas/4.png -> Base64
-Producto actualizado con imágenes Base64: CO001 - PlayStation 5
-Conversión de imágenes completada. Convertidos: 19, Ya convertidos: 0
-```
+### Paso 2B: Si usa PostgreSQL
 
-### 3. Probar en Postman
-
-```
-GET http://localhost:8094/productos
-Headers:
-  X-API-Key: levelup-2024-secret-api-key-change-in-production
-```
-
-### 4. Verificar la Respuesta
-
-Las imágenes deberían estar en Base64:
-
-```json
-{
-    "id": 1,
-    "titulo": "PlayStation 5",
-    "imagen": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...",
-    "imagenes": "[\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...\", ...]"
-}
+1. Conéctate a PostgreSQL:
+```bash
+psql -h levelup-db.cvcqjuf3hjcs.us-east-1.rds.amazonaws.com \
+     -p 5432 \
+     -U levelup_admin \
+     -d postgres
 ```
 
-## Archivos Creados/Modificados
+2. Ejecuta el script `verificar_y_actualizar_rutas.sql`
 
-1. **`ImagePathMapper.java`** - Servicio que mapea rutas incorrectas a rutas correctas
-2. **`ProductoDataInitializerFromSQL.java`** - Actualizado para usar el mapeo antes de convertir a Base64
+### Paso 3: Verificar que se actualizaron
 
-## Cómo Funciona
+Después de ejecutar el script, verifica:
 
-1. El inicializador lee todos los productos de la base de datos
-2. Para cada producto con rutas (no Base64):
-   - Limpia la ruta (remueve prefijo `./` si existe)
-   - Usa `ImagePathMapper` para mapear a la ruta correcta
-   - Usa `ImageBase64Service` para convertir a Base64
-   - Guarda el producto actualizado
-
-## Troubleshooting
-
-### Las imágenes no se convierten
-
-1. **Verifica los logs** al iniciar el microservicio
-2. **Verifica que `default.data.enabled=true`** en `application-dev.properties`
-3. **Verifica que las imágenes existan** en `resources/static/img/`
-
-### Error: "Ruta mapeada: ... -> ..." pero "No se pudo convertir imagen"
-
-1. **Verifica que el archivo exista** en `resources/static/img/`
-2. **Verifica que el nombre del archivo** coincida exactamente (mayúsculas/minúsculas)
-
-### Necesitas agregar más mapeos
-
-Edita `ImagePathMapper.java` y agrega más entradas en el `PATH_MAP`:
-
-```java
-static {
-    // Agregar más mapeos aquí
-    PATH_MAP.put("img/ruta/incorrecta.png", "img/ruta_correcta.png");
-}
+```sql
+SELECT codigo_producto, titulo, imagen 
+FROM productos 
+WHERE imagen LIKE '%consolas/%' OR imagen LIKE '%perifericos/%';
 ```
 
-## Notas
+Si esta consulta devuelve 0 filas, las rutas se actualizaron correctamente.
 
-- El mapeo maneja rutas con o sin prefijo `./`
-- Si no hay mapeo para una ruta, se usa la ruta original (limpia)
-- El inicializador solo convierte imágenes que NO son Base64 (no comienzan con `data:image`)
+### Paso 4: Reiniciar el microservicio (opcional)
 
+Si los cambios no se reflejan inmediatamente:
+
+```bash
+# Encontrar el PID
+ps aux | grep "msvc-productos" | grep -v grep
+
+# Matar el proceso (reemplaza PID)
+kill -9 PID
+
+# Reiniciar
+cd msvc-productos
+nohup java -Xms256m -Xmx512m -jar target/msvc-productos-0.0.1-SNAPSHOT.jar > productos.log 2>&1 &
+```
+
+## Nota sobre Ctrl+Z
+
+Si usaste `Ctrl+Z` para salir de psql, el proceso quedó suspendido. Para terminarlo:
+
+```bash
+# Ver procesos suspendidos
+jobs
+
+# Terminar el proceso suspendido
+kill %1  # o el número que muestre jobs
+```
+
+O simplemente ignóralo, no afecta el funcionamiento del backend.

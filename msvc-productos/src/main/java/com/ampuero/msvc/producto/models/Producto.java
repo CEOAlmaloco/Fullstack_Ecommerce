@@ -157,10 +157,10 @@ public class Producto {
     @Transient
     private Boolean destacadoHome;
 
-    @Transient
+    @Column(name = "fabricante", length = 120)
     private String fabricante;
 
-    @Transient
+    @Column(name = "distribuidor", length = 120)
     private String distribuidor;
 
     @PrePersist

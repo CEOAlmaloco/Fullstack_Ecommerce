@@ -199,6 +199,12 @@ public class UsuarioServiceImpl implements UsuarioService {
         if (usuarioUpdateDTO.getDireccion() != null) {
             usuario.setDireccion(usuarioUpdateDTO.getDireccion());
         }
+        if (usuarioUpdateDTO.getRegion() != null) {
+            usuario.setRegion(usuarioUpdateDTO.getRegion());
+        }
+        if (usuarioUpdateDTO.getComuna() != null) {
+            usuario.setComuna(usuarioUpdateDTO.getComuna());
+        }
         if (usuarioUpdateDTO.getCiudad() != null) {
             usuario.setCiudad(usuarioUpdateDTO.getCiudad());
         }
@@ -481,9 +487,21 @@ public class UsuarioServiceImpl implements UsuarioService {
                 usuario = usuarioRepository.findFirstByNombreIgnoreCase(identificador)
                         .orElse(null);
 
+                // Intentar con nombre completo "nombre apellido"
+                if (usuario == null && identificador.contains(" ")) {
+                    usuario = usuarioRepository.findByNombreCompletoIgnoreCase(identificador)
+                            .orElse(null);
+                }
+
+                // Intentar por RUN
+                if (usuario == null) {
+                    usuario = usuarioRepository.findByRunUsuario(identificador)
+                            .orElse(null);
+                }
+
                 // Si no se encuentra por nombre, intentar por correo igualmente
                 if (usuario == null) {
-                    usuario = usuarioRepository.findByCorreo(identificador)
+                    usuario = usuarioRepository.findByCorreo(identificador.toLowerCase())
                             .orElse(null);
                 }
             }

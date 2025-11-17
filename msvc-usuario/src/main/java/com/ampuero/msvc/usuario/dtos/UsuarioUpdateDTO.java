@@ -27,7 +27,7 @@ public class UsuarioUpdateDTO {
     @Email(message = "El formato del correo no es válido")
     private String correo;
 
-    @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
+    @Size(min = 4, max = 10, message = "La contraseña debe tener entre 4 y 10 caracteres")
     private String password;
 
     private String telefono;
@@ -37,6 +37,10 @@ public class UsuarioUpdateDTO {
     private Usuario.Genero genero;
 
     private String direccion;
+
+    private String region;
+
+    private String comuna;
 
     private String ciudad;
 

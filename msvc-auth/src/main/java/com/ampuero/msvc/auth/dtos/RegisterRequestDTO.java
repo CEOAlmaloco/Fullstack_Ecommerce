@@ -22,14 +22,10 @@ public class RegisterRequestDTO {
 
     @NotBlank(message = "El correo es requerido")
     @Email(message = "Formato de correo inválido")
-    @Pattern(regexp = ".*(@duoc\\.cl|@profesor\\.duoc\\.cl|@gmail\\.com)$",
-            message = "Solo se permiten correos @duoc.cl, @profesor.duoc.cl y @gmail.com")
     private String correoUsuario;
 
     @NotBlank(message = "La contraseña es requerida")
     @Size(min = 4, max = 10, message = "La contraseña debe tener entre 4 y 10 caracteres")
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).*$",
-            message = "La contraseña debe contener al menos: 1 minúscula, 1 mayúscula y 1 número")
     private String password;
 
     @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$", message = "Fecha debe tener formato YYYY-MM-DD")

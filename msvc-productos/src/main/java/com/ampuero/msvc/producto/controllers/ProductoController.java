@@ -313,7 +313,7 @@ public class ProductoController {
             java.util.List<java.util.Map<String, String>> carrusel = new java.util.ArrayList<>();
             
             // Imagen 1: PlayStation 5 (play5white.png)
-            String imagen1Url = "https://levelup-gamer-products.s3.us-east-1.amazonaws.com/img/play5white.png";
+            String imagen1Url = "https://levelup-gamer-products.s3.us-east-1.amazonaws.com/img/carruselproductos.png";
             java.util.Map<String, String> item1 = new java.util.HashMap<>();
             item1.put("id", "1");
             item1.put("url", imagen1Url);
@@ -324,7 +324,7 @@ public class ProductoController {
             carrusel.add(item1);
 
             // Imagen 2: Monitor ASUS (monitorasus.png)
-            String imagen2Url = "https://levelup-gamer-products.s3.us-east-1.amazonaws.com/img/monitorasus.png";
+            String imagen2Url = "https://levelup-gamer-products.s3.us-east-1.amazonaws.com/img/carruselnoticias.png";
             java.util.Map<String, String> item2 = new java.util.HashMap<>();
             item2.put("id", "2");
             item2.put("url", imagen2Url);
@@ -335,7 +335,7 @@ public class ProductoController {
             carrusel.add(item2);
 
             // Imagen 3: Eventos (evento.jpg)
-            String imagen3Url = "https://levelup-gamer-products.s3.us-east-1.amazonaws.com/img/evento.jpg";
+            String imagen3Url = "https://levelup-gamer-products.s3.us-east-1.amazonaws.com/img/blog.png";
             java.util.Map<String, String> item3 = new java.util.HashMap<>();
             item3.put("id", "3");
             item3.put("url", imagen3Url);

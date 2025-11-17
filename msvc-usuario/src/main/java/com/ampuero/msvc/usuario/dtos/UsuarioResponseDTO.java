@@ -27,6 +27,8 @@ public class UsuarioResponseDTO {
     private LocalDate fechaNacimiento;
     private Usuario.Genero genero;
     private String direccion;
+    private String region;
+    private String comuna;
     private String ciudad;
     private String pais;
     private String codigoPostal;
@@ -110,6 +112,8 @@ public class UsuarioResponseDTO {
         this.fechaNacimiento = usuario.getFechaNacimiento();
         this.genero = usuario.getGenero();
         this.direccion = usuario.getDireccion();
+        this.region = usuario.getRegion();
+        this.comuna = usuario.getComuna();
         this.ciudad = usuario.getCiudad();
         this.pais = usuario.getPais();
         this.codigoPostal = usuario.getCodigoPostal();

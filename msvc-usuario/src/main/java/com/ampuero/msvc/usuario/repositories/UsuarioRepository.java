@@ -102,6 +102,15 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findFirstByNombreIgnoreCase(String nombre);
 
     /**
+     * Busca un usuario por su nombre completo (nombre + apellido) ignorando mayúsculas/minúsculas.
+     *
+     * @param nombreCompleto Nombre completo suministrado por el usuario
+     * @return Usuario encontrado o vacío si no existe
+     */
+    @Query("SELECT u FROM Usuario u WHERE LOWER(CONCAT(TRIM(u.nombre), ' ', TRIM(u.apellido))) = LOWER(:nombreCompleto)")
+    Optional<Usuario> findByNombreCompletoIgnoreCase(@Param("nombreCompleto") String nombreCompleto);
+
+    /**
      * Verifica si existe un usuario con el RUN dado
      * @param runUsuario RUN a verificar
      * @return true si existe, false si no

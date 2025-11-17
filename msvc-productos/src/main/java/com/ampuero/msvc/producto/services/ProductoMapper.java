@@ -93,6 +93,10 @@ public class ProductoMapper {
             dto.setImagenesUrls(imagenesUrls);
         }
 
+        // Fabricante / Distribuidor
+        dto.setFabricante(resolveFabricante(producto));
+        dto.setDistribuidor(resolveDistribuidor(producto));
+
         return dto;
     }
 
@@ -110,6 +114,46 @@ public class ProductoMapper {
         return productos.stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    private String resolveFabricante(Producto producto) {
+        if (producto.getFabricante() != null && !producto.getFabricante().isBlank()) {
+            return producto.getFabricante();
+        }
+        String titulo = producto.getTitulo() != null ? producto.getTitulo().toLowerCase() : "";
+        if (titulo.contains("playstation") || titulo.contains("dualsense") || titulo.contains("dualshock")) {
+            return "Sony Interactive Entertainment";
+        }
+        if (titulo.contains("logitech")) {
+            return "Logitech";
+        }
+        if (titulo.contains("asus")) {
+            return "ASUS";
+        }
+        if (titulo.contains("mouse") || titulo.contains("cougar")) {
+            return "Cougar Gaming";
+        }
+        if (titulo.contains("polerón") || titulo.contains("poleron")) {
+            return "Level-Up Apparel";
+        }
+        if (titulo.contains("catan") || titulo.contains("carcassonne")) {
+            return "Devir";
+        }
+        return "Level-Up Gamer";
+    }
+
+    private String resolveDistribuidor(Producto producto) {
+        if (producto.getDistribuidor() != null && !producto.getDistribuidor().isBlank()) {
+            return producto.getDistribuidor();
+        }
+        String categoria = producto.getCategoriaId() != null ? producto.getCategoriaId().toUpperCase() : "";
+        return switch (categoria) {
+            case "CO" -> "Distribuidora Sony Chile";
+            case "PE" -> "Level-Up Tech Supply";
+            case "RO" -> "Level-Up Apparel";
+            case "EN" -> "Level-Up Board Games";
+            default -> "Level-Up Gamer";
+        };
     }
 }
 
