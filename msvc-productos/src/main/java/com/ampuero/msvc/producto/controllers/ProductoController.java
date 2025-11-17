@@ -118,11 +118,22 @@ public class ProductoController {
             )
     })
     public ResponseEntity<ProductoResponseDTO> traerPorId(@PathVariable Long id) {
+        log.info("GET /productos/{} - Iniciando obtención de producto por ID", id);
         Producto producto = this.productoService.traerPorId(id);
         if (producto == null) {
+            log.warn("GET /productos/{} - Producto no encontrado", id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+        log.info("GET /productos/{} - Producto encontrado: {}", id, producto.getTitulo());
+        log.info("GET /productos/{} - Imagen: {}, Descripción: {}, Rating: {}", 
+                id, producto.getImagen(), 
+                producto.getDescripcion() != null ? producto.getDescripcion().substring(0, Math.min(50, producto.getDescripcion().length())) : "null",
+                producto.getRating());
         ProductoResponseDTO productoDTO = productoMapper.toDTO(producto);
+        log.info("GET /productos/{} - DTO mapeado - imagenUrl: {}, descripcion: {}, rating: {}", 
+                id, productoDTO.getImagenUrl(), 
+                productoDTO.getDescripcion() != null ? productoDTO.getDescripcion().substring(0, Math.min(50, productoDTO.getDescripcion().length())) : "null",
+                productoDTO.getRating());
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(productoDTO);
