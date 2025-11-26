@@ -2,6 +2,8 @@ package com.ampuero.msvc.pedido.exceptions;
 
 import com.ampuero.msvc.pedido.dtos.ErrorDTO;
 import feign.FeignException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -16,6 +18,8 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     private ErrorDTO createErrorDTO(int status, LocalDate localDate, Map<String, String> errorMap) {
         ErrorDTO errorDTO = new ErrorDTO();
@@ -66,5 +70,28 @@ public class GlobalExceptionHandler {
         LocalDate localDate = LocalDate.now();
         return ResponseEntity.status(status)
                 .body(this.createErrorDTO(status.value(), localDate, errorMap));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorDTO> handleGenericException(Exception ex) {
+        logger.error("Error no manejado en el servidor", ex);
+        
+        String errorMessage = ex.getMessage();
+        if (errorMessage == null || errorMessage.isEmpty()) {
+            errorMessage = "Error interno del servidor: " + ex.getClass().getSimpleName();
+        }
+        
+        Map<String, String> errorMap = new HashMap<>();
+        errorMap.put("error", errorMessage);
+        errorMap.put("type", ex.getClass().getSimpleName());
+        
+        // Incluir mensaje de causa si existe
+        if (ex.getCause() != null) {
+            errorMap.put("cause", ex.getCause().getMessage());
+        }
+        
+        LocalDate localDate = LocalDate.now();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(this.createErrorDTO(HttpStatus.INTERNAL_SERVER_ERROR.value(), localDate, errorMap));
     }
 }

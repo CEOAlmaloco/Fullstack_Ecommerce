@@ -8,6 +8,8 @@ import com.ampuero.msvc.pedido.models.Pedido;
 import com.ampuero.msvc.pedido.models.PedidoItem;
 import com.ampuero.msvc.pedido.repositories.PedidoItemRepository;
 import com.ampuero.msvc.pedido.repositories.PedidoRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,8 @@ import java.util.UUID;
 @Service
 public class PedidoServiceImpl implements PedidoService {
 
+    private static final Logger logger = LoggerFactory.getLogger(PedidoServiceImpl.class);
+
     @Autowired
     private PedidoRepository pedidoRepository;
 
@@ -29,46 +33,59 @@ public class PedidoServiceImpl implements PedidoService {
     @Override
     @Transactional
     public Pedido crearPedido(PedidoCreationDTO pedidoDTO) {
-        Pedido pedido = new Pedido();
-        pedido.setIdUsuario(pedidoDTO.getIdUsuario());
-        pedido.setNombreEnvio(pedidoDTO.getNombreEnvio());
-        pedido.setApellidoEnvio(pedidoDTO.getApellidoEnvio());
-        pedido.setEmailEnvio(pedidoDTO.getEmailEnvio());
-        pedido.setTelefonoEnvio(pedidoDTO.getTelefonoEnvio());
-        pedido.setDireccionEnvio(pedidoDTO.getDireccionEnvio());
-        pedido.setDepartamentoEnvio(pedidoDTO.getDepartamentoEnvio());
-        pedido.setRegionEnvio(pedidoDTO.getRegionEnvio());
-        pedido.setComunaEnvio(pedidoDTO.getComunaEnvio());
-        pedido.setIndicadoresEntrega(pedidoDTO.getIndicadoresEntrega());
-        pedido.setSubtotal(pedidoDTO.getSubtotal());
-        pedido.setDescuento(pedidoDTO.getDescuento());
-        pedido.setIva(pedidoDTO.getIva());
-        pedido.setTotal(pedidoDTO.getTotal());
-        pedido.setEstado(Pedido.EstadoPedido.PENDIENTE);
-        pedido.setIdCarrito(pedidoDTO.getIdCarrito());
+        try {
+            logger.info("Creando pedido para usuario: {}", pedidoDTO.getIdUsuario());
+            
+            Pedido pedido = new Pedido();
+            pedido.setIdUsuario(pedidoDTO.getIdUsuario());
+            pedido.setNombreEnvio(pedidoDTO.getNombreEnvio());
+            pedido.setApellidoEnvio(pedidoDTO.getApellidoEnvio());
+            pedido.setEmailEnvio(pedidoDTO.getEmailEnvio());
+            pedido.setTelefonoEnvio(pedidoDTO.getTelefonoEnvio());
+            pedido.setDireccionEnvio(pedidoDTO.getDireccionEnvio());
+            pedido.setDepartamentoEnvio(pedidoDTO.getDepartamentoEnvio());
+            pedido.setRegionEnvio(pedidoDTO.getRegionEnvio());
+            pedido.setComunaEnvio(pedidoDTO.getComunaEnvio());
+            pedido.setIndicadoresEntrega(pedidoDTO.getIndicadoresEntrega());
+            pedido.setSubtotal(pedidoDTO.getSubtotal());
+            pedido.setDescuento(pedidoDTO.getDescuento());
+            pedido.setIva(pedidoDTO.getIva());
+            pedido.setTotal(pedidoDTO.getTotal());
+            pedido.setEstado(Pedido.EstadoPedido.PENDIENTE);
+            pedido.setIdCarrito(pedidoDTO.getIdCarrito());
 
-        // Generar código único
-        String codigo = generarCodigoPedido();
-        pedido.setCodigo(codigo);
+            // Generar código único
+            String codigo = generarCodigoPedido();
+            pedido.setCodigo(codigo);
+            
+            logger.debug("Guardando pedido con código: {}", codigo);
+            Pedido pedidoGuardado = pedidoRepository.save(pedido);
+            logger.info("Pedido guardado con ID: {}", pedidoGuardado.getId());
 
-        Pedido pedidoGuardado = pedidoRepository.save(pedido);
-
-        // Guardar items del pedido
-        if (pedidoDTO.getItems() != null && !pedidoDTO.getItems().isEmpty()) {
-            for (PedidoItemCreationDTO itemDTO : pedidoDTO.getItems()) {
-                PedidoItem item = new PedidoItem();
-                item.setIdPedido(pedidoGuardado.getId());
-                item.setIdProducto(itemDTO.getIdProducto());
-                item.setNombreProducto(itemDTO.getNombreProducto());
-                item.setPrecio(itemDTO.getPrecio());
-                item.setCantidad(itemDTO.getCantidad());
-                item.setSubtotal(itemDTO.getSubtotal());
-                item.setImagenUrl(itemDTO.getImagenUrl());
-                pedidoItemRepository.save(item);
+            // Guardar items del pedido
+            if (pedidoDTO.getItems() != null && !pedidoDTO.getItems().isEmpty()) {
+                logger.debug("Guardando {} items del pedido", pedidoDTO.getItems().size());
+                for (PedidoItemCreationDTO itemDTO : pedidoDTO.getItems()) {
+                    PedidoItem item = new PedidoItem();
+                    item.setIdPedido(pedidoGuardado.getId());
+                    item.setIdProducto(itemDTO.getIdProducto());
+                    item.setNombreProducto(itemDTO.getNombreProducto());
+                    item.setPrecio(itemDTO.getPrecio());
+                    item.setCantidad(itemDTO.getCantidad());
+                    item.setSubtotal(itemDTO.getSubtotal());
+                    item.setImagenUrl(itemDTO.getImagenUrl());
+                    pedidoItemRepository.save(item);
+                }
+                logger.info("Items del pedido guardados correctamente");
+            } else {
+                logger.warn("El pedido no tiene items asociados");
             }
-        }
 
-        return pedidoGuardado;
+            return pedidoGuardado;
+        } catch (Exception e) {
+            logger.error("Error al crear pedido: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     private String generarCodigoPedido() {
@@ -87,8 +104,14 @@ public class PedidoServiceImpl implements PedidoService {
 
     @Override
     public Pedido traerPedidoPorCodigo(String codigo) {
-        return pedidoRepository.findByCodigo(codigo)
-                .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado con código: " + codigo));
+        try {
+            logger.debug("Buscando pedido con código: {}", codigo);
+            return pedidoRepository.findByCodigo(codigo)
+                    .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado con código: " + codigo));
+        } catch (Exception e) {
+            logger.error("Error al buscar pedido por código {}: {}", codigo, e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
