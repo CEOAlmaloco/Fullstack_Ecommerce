@@ -114,7 +114,11 @@ public class MsvcGatewayApplication {
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
-        String allowedOrigins = environment.getProperty("cors.allowed-origins", "http://localhost:5173,http://localhost:3000");
+        // Leer primero de variable de entorno CORS_ORIGINS, luego de cors.allowed-origins
+        String allowedOrigins = System.getenv("CORS_ORIGINS");
+        if (allowedOrigins == null || allowedOrigins.isEmpty()) {
+            allowedOrigins = environment.getProperty("cors.allowed-origins", "http://localhost:5173,http://localhost:3000");
+        }
         
         // Log para debugging
         System.out.println("CORS Configuration - allowedOrigins: [" + allowedOrigins + "]");
