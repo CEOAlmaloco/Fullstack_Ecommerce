@@ -8,10 +8,10 @@ export JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto.x86_64
 export PATH=$JAVA_HOME/bin:$PATH
 
 # Variables de entorno del proyecto
-export SPRING_PROFILES_ACTIVE=prod
+export SPRING_PROFILES_ACTIVE=docker
 
 # Configuración de Base de Datos RDS
-export DB_HOST=levelup-db.xxxxx.us-east-1.rds.amazonaws.com
+export DB_HOST=levelup-db.chay4yeqqnsm.us-east-1.rds.amazonaws.com
 export DB_PORT=5432
 export DB_USERNAME=levelup_admin
 export DB_PASSWORD=tu_password_segura_aqui
@@ -81,7 +81,7 @@ start_service() {
             DB_NAME="levelup_carrito"
             ;;
         "msvc-pedido")
-            DB_NAME="levelup_pedido"
+            DB_NAME="levelup_web_pedido"
             ;;
         "msvc-pagos")
             DB_NAME="levelup_pagos"
@@ -102,10 +102,10 @@ start_service() {
             DB_NAME="levelup_notificaciones"
             ;;
         "msvc-eventos")
-            DB_NAME="levelup_eventos"
+            DB_NAME="levelup_web_eventos"
             ;;
         "msvc-contenido")
-            DB_NAME="levelup_contenido"
+            DB_NAME="levelup_web_contenido"
             ;;
         *)
             DB_NAME="levelup_main"
