@@ -68,19 +68,13 @@ public class EventoServiceImpl implements EventoService {
     /**
      * Obtiene una lista con todos los eventos registrados
      *
-     * @return Lista de eventos
-     * @throws EventoException si no hay eventos registrados
+     * @return Lista de eventos (puede estar vacía si no hay eventos)
      */
     @Transactional(readOnly = true)
     @Override
     public List<Evento> traerTodos() {
         List<Evento> eventos = eventoRepository.findAll();
-
-        if (eventos.isEmpty()) {
-            throw new EventoException("No hay eventos registrados");
-        }
-
-        return eventos;
+        return eventos; // Retornar lista vacía si no hay eventos en lugar de lanzar excepción
     }
 
     /**
