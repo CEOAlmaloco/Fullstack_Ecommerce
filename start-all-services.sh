@@ -21,7 +21,8 @@ export DB_DRIVER=org.postgresql.Driver
 export JWT_SECRET=levelUpGamerSecretKey2024SecureForJWT256BitsMinimum
 
 # Configuración CORS
-export CORS_ORIGINS=http://[IP_FRONTEND]:5173,http://[IP_FRONTEND]:80,https://tu-dominio.com
+# Usar '*' para permitir todos los orígenes (con comillas simples para que sea literal)
+export CORS_ORIGINS='*'
 
 # Configuración S3
 export S3_BUCKET_NAME=levelup-gamer-products
