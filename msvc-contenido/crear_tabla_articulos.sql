@@ -1,8 +1,11 @@
 -- Script para crear la tabla articulos manualmente
--- Ejecutar en la base de datos: levelup_contenido
+-- Ejecutar en la base de datos: levelup_web_contenido
 -- Solo usar si JPA/Hibernate no crea la tabla automáticamente
 
-CREATE TABLE IF NOT EXISTS articulos (
+-- Eliminar tabla si existe (cuidado en producción)
+DROP TABLE IF EXISTS articulos CASCADE;
+
+CREATE TABLE articulos (
     id_articulo BIGSERIAL PRIMARY KEY,
     titulo_articulo VARCHAR(255) NOT NULL,
     contenido_articulo TEXT,
@@ -24,10 +27,10 @@ CREATE TABLE IF NOT EXISTS articulos (
 );
 
 -- Crear índices para mejorar el rendimiento
-CREATE INDEX IF NOT EXISTS idx_articulos_categoria ON articulos(categoria_articulo);
-CREATE INDEX IF NOT EXISTS idx_articulos_estado ON articulos(estado_articulo);
-CREATE INDEX IF NOT EXISTS idx_articulos_activo ON articulos(activo);
-CREATE INDEX IF NOT EXISTS idx_articulos_fecha_publicacion ON articulos(fecha_publicacion);
+CREATE INDEX idx_articulos_categoria ON articulos(categoria_articulo);
+CREATE INDEX idx_articulos_estado ON articulos(estado_articulo);
+CREATE INDEX idx_articulos_activo ON articulos(activo);
+CREATE INDEX idx_articulos_fecha_publicacion ON articulos(fecha_publicacion);
 
 -- Verificar que la tabla se creó
 SELECT * FROM articulos LIMIT 0;

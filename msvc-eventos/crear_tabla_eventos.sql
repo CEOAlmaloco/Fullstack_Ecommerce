@@ -1,8 +1,11 @@
 -- Script para crear la tabla eventos manualmente
--- Ejecutar en la base de datos: levelup_eventos
+-- Ejecutar en la base de datos: levelup_web_eventos
 -- Solo usar si JPA/Hibernate no crea la tabla automáticamente
 
-CREATE TABLE IF NOT EXISTS eventos (
+-- Eliminar tabla si existe (cuidado en producción)
+DROP TABLE IF EXISTS eventos CASCADE;
+
+CREATE TABLE eventos (
     id_evento BIGSERIAL PRIMARY KEY,
     nombre_evento VARCHAR(255) NOT NULL,
     descripcion_evento TEXT,
@@ -25,10 +28,10 @@ CREATE TABLE IF NOT EXISTS eventos (
 );
 
 -- Crear índices para mejorar el rendimiento
-CREATE INDEX IF NOT EXISTS idx_eventos_tipo ON eventos(tipo_evento);
-CREATE INDEX IF NOT EXISTS idx_eventos_activo ON eventos(activo);
-CREATE INDEX IF NOT EXISTS idx_eventos_fecha_inicio ON eventos(fecha_inicio);
-CREATE INDEX IF NOT EXISTS idx_eventos_fecha_fin ON eventos(fecha_fin);
+CREATE INDEX idx_eventos_tipo ON eventos(tipo_evento);
+CREATE INDEX idx_eventos_activo ON eventos(activo);
+CREATE INDEX idx_eventos_fecha_inicio ON eventos(fecha_inicio);
+CREATE INDEX idx_eventos_fecha_fin ON eventos(fecha_fin);
 
 -- Verificar que la tabla se creó
 SELECT * FROM eventos LIMIT 0;
