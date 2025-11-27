@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 public class ReseniaCreationDTO {
-    @NotNull(message = "El ID de producto es requerido")
+    // idProducto se establece desde el path variable, no necesita validación aquí
     private Long idProducto;
 
     @NotNull(message = "El ID de usuario es requerido")
