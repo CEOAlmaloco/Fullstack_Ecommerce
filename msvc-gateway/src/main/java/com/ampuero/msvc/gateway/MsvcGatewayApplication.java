@@ -115,14 +115,30 @@ public class MsvcGatewayApplication {
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfig = new CorsConfiguration();
         String allowedOrigins = environment.getProperty("cors.allowed-origins", "http://localhost:5173,http://localhost:3000");
-        Arrays.stream(allowedOrigins.split(","))
-                .map(String::trim)
-                .filter(origin -> !origin.isEmpty())
-                .distinct()
-                .forEach(corsConfig::addAllowedOrigin);
+        
+        // Log para debugging
+        System.out.println("CORS Configuration - allowedOrigins: [" + allowedOrigins + "]");
+        
+        // Si es "*", permitir todos los orígenes usando addAllowedOriginPattern
+        String trimmed = allowedOrigins != null ? allowedOrigins.trim() : "";
+        if ("*".equals(trimmed)) {
+            corsConfig.addAllowedOriginPattern("*");
+            corsConfig.setAllowCredentials(true);
+            System.out.println("CORS: Using wildcard pattern (*)");
+        } else {
+            // Si son orígenes específicos, agregarlos normalmente
+            Arrays.stream(allowedOrigins.split(","))
+                    .map(String::trim)
+                    .filter(origin -> !origin.isEmpty())
+                    .distinct()
+                    .forEach(corsConfig::addAllowedOrigin);
+            corsConfig.setAllowCredentials(true);
+            System.out.println("CORS: Using specific origins: " + corsConfig.getAllowedOrigins());
+        }
+        
         corsConfig.addAllowedMethod("*");
         corsConfig.addAllowedHeader("*");
-        corsConfig.setAllowCredentials(true);
+        corsConfig.setMaxAge(3600L); // Cache preflight for 1 hour
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfig);
