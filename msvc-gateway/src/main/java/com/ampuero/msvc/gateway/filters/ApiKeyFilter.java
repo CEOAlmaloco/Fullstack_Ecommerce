@@ -41,6 +41,12 @@ public class ApiKeyFilter extends AbstractGatewayFilterFactory<ApiKeyFilter.Conf
             ServerHttpRequest request = exchange.getRequest();
             ServerHttpResponse response = exchange.getResponse();
 
+            // Permitir peticiones OPTIONS (preflight de CORS) sin API key
+            if ("OPTIONS".equalsIgnoreCase(request.getMethod().name())) {
+                log.debug("Allowing OPTIONS preflight request without API key");
+                return chain.filter(exchange);
+            }
+
             // Obtener API key del header
             String apiKey = request.getHeaders().getFirst("X-API-Key");
 
