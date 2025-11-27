@@ -8,7 +8,7 @@ export JAVA_HOME=/usr/lib/jvm/java-21-amazon-corretto.x86_64
 export PATH=$JAVA_HOME/bin:$PATH
 
 # Variables de entorno del proyecto
-export SPRING_PROFILES_ACTIVE=docker
+export SPRING_PROFILES_ACTIVE=prod
 
 # Configuración de Base de Datos RDS
 export DB_HOST=levelup-db.chay4yeqqnsm.us-east-1.rds.amazonaws.com
