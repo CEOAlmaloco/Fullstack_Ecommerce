@@ -27,6 +27,9 @@ SERVICES=(
     "msvc-referidos:8005"
     "msvc-promociones:8091"
     "msvc-inventario:8004"
+    "msvc-eventos:8092"
+    "msvc-contenido:8093"
+    "msvc-notificaciones:8006"
 )
 
 # Función para compilar un microservicio
