@@ -95,8 +95,8 @@ public class MsvcGatewayApplication {
                 .route("msvc-notificaciones", r -> r.path("/notificaciones/**")
                         .uri(notificacionesServiceUrl))
 
-                // Event Service
-                .route("msvc-eventos", r -> r.path("/eventos/**")
+                // Event Service - Rutea /eventos a /eventos y /eventos/** a /eventos/** en el microservicio
+                .route("msvc-eventos", r -> r.path("/eventos", "/eventos/**")
                         .uri(eventosServiceUrl))
 
                 // Content Service
