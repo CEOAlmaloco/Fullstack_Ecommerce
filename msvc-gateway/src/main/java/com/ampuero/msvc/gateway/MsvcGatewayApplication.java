@@ -47,9 +47,9 @@ public class MsvcGatewayApplication {
                         .filters(f -> f.rewritePath("/auth/(?<path>.*)", "/api/v1/auth/${path}"))
                         .uri(authServiceUrl))
 
-                // User Service - Rutea /usuarios/** a /api/v1/usuarios/** en el microservicio
-                .route("msvc-usuario", r -> r.path("/usuarios/**")
-                        .filters(f -> f.rewritePath("/usuarios/(?<path>.*)", "/api/v1/usuarios/${path}"))
+                // User Service - Rutea /usuarios a /api/v1/usuarios y /usuarios/** a /api/v1/usuarios/** en el microservicio
+                .route("msvc-usuario", r -> r.path("/usuarios", "/usuarios/**")
+                        .filters(f -> f.rewritePath("/usuarios(?<path>.*)", "/api/v1/usuarios${path}"))
                         .uri(usuarioServiceUrl))
 
                 // Product Service - Reescribe /productos a /api/v1/productos y /productos/** a /api/v1/productos/**
