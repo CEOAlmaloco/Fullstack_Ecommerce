@@ -1,5 +1,6 @@
 package com.ampuero.msvc.carrito.services;
 
+import com.ampuero.msvc.carrito.clients.ProductoClientRest;
 import com.ampuero.msvc.carrito.dtos.CarritoCreationDTO;
 import com.ampuero.msvc.carrito.dtos.CarritoEstadoDTO;
 import com.ampuero.msvc.carrito.dtos.ItemCarritoCreationDTO;
@@ -11,12 +12,15 @@ import com.ampuero.msvc.carrito.repositories.ItemCarritoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -36,6 +40,9 @@ public class CarritoServiceImpl implements CarritoService {
     
     @Autowired
     private ItemCarritoRepository itemCarritoRepository;
+    
+    @Autowired
+    private ProductoClientRest productoClient;
 
     // ========== GESTIÓN DE CARRITOS ==========
 
@@ -313,15 +320,37 @@ public class CarritoServiceImpl implements CarritoService {
         Carrito carrito = traerCarritoPorId(itemDetails.getIdCarrito());
         
         // Verificar si el item ya existe en el carrito
-        Optional<ItemCarrito> itemExistente = itemCarritoRepository.findItemPorCarritoYProducto(
+        // Nota: Puede haber duplicados, así que tomamos el más reciente (primero de la lista ordenada)
+        List<ItemCarrito> itemsExistentes = itemCarritoRepository.findItemsPorCarritoYProducto(
             itemDetails.getIdCarrito(), itemDetails.getIdProducto());
         
-        if (itemExistente.isPresent()) {
-            // Si existe, actualizar la cantidad
-            ItemCarrito item = itemExistente.get();
+        if (!itemsExistentes.isEmpty()) {
+            // Si hay duplicados, desactivar los más antiguos (todos excepto el primero)
+            if (itemsExistentes.size() > 1) {
+                log.warn("Se detectaron {} items duplicados para carrito {} y producto {}. Desactivando los más antiguos.", 
+                    itemsExistentes.size(), itemDetails.getIdCarrito(), itemDetails.getIdProducto());
+                for (int i = 1; i < itemsExistentes.size(); i++) {
+                    ItemCarrito duplicado = itemsExistentes.get(i);
+                    duplicado.setActivo(false);
+                    duplicado.setEstadoItem("ELIMINADO");
+                    duplicado.setFechaActualizado(LocalDateTime.now());
+                    itemCarritoRepository.save(duplicado);
+                }
+            }
+            
+            // Tomar el más reciente (primero de la lista) y actualizar la cantidad
+            ItemCarrito item = itemsExistentes.get(0);
             item.setCantidad(item.getCantidad() + itemDetails.getCantidad());
             item.setFechaActualizado(LocalDateTime.now());
-            return itemCarritoRepository.save(item);
+            item.setSubtotal(item.getPrecioUnitario() * item.getCantidad());
+            item.setTotalItem(item.getSubtotal());
+            
+            ItemCarrito itemActualizado = itemCarritoRepository.save(item);
+            
+            // Recalcular totales del carrito
+            calcularTotales(itemDetails.getIdCarrito());
+            
+            return itemActualizado;
         } else {
             // Si no existe, crear nuevo item
             ItemCarrito itemEntity = new ItemCarrito();
@@ -333,10 +362,52 @@ public class CarritoServiceImpl implements CarritoService {
             itemEntity.setEstadoItem("ACTIVO");
             itemEntity.setNotasItem(itemDetails.getNotasItem());
             
-            // Aquí se obtendría la información del producto desde msvc-productos
-            // Por ahora usamos valores por defecto
-            itemEntity.setNombreProducto("Producto " + itemDetails.getIdProducto());
-            itemEntity.setPrecioUnitario(10000.0); // Precio por defecto
+            // Obtener información real del producto desde msvc-productos
+            try {
+                ResponseEntity<Map<String, Object>> productoResponse = productoClient.obtenerProducto(itemDetails.getIdProducto());
+                if (productoResponse.getStatusCode() == HttpStatus.OK && productoResponse.getBody() != null) {
+                    Map<String, Object> productoData = productoResponse.getBody();
+                    
+                    // Extraer información del producto desde el Map
+                    String nombreProducto = (String) productoData.getOrDefault("nombreProducto", 
+                        productoData.getOrDefault("titulo", 
+                        productoData.getOrDefault("nombre", "Producto " + itemDetails.getIdProducto())));
+                    String descripcionProducto = (String) productoData.getOrDefault("descripcionProducto",
+                        productoData.getOrDefault("descripcion", ""));
+                    
+                    // Obtener precio (puede venir como precioProducto, precio, o precioConDescuento)
+                    Double precio = null;
+                    if (productoData.containsKey("precioConDescuento") && productoData.get("precioConDescuento") != null) {
+                        precio = ((Number) productoData.get("precioConDescuento")).doubleValue();
+                    } else if (productoData.containsKey("precioProducto") && productoData.get("precioProducto") != null) {
+                        precio = ((Number) productoData.get("precioProducto")).doubleValue();
+                    } else if (productoData.containsKey("precio") && productoData.get("precio") != null) {
+                        precio = ((Number) productoData.get("precio")).doubleValue();
+                    }
+                    
+                    if (precio == null || precio <= 0) {
+                        log.warn("Precio inválido o no encontrado para producto {}, usando precio por defecto", itemDetails.getIdProducto());
+                        precio = 10000.0;
+                    }
+                    
+                    itemEntity.setNombreProducto(nombreProducto);
+                    itemEntity.setDescripcionProducto(descripcionProducto);
+                    itemEntity.setPrecioUnitario(precio);
+                    
+                    log.info("Información del producto obtenida: nombre={}, precio={}", nombreProducto, precio);
+                } else {
+                    log.warn("No se pudo obtener información del producto {} desde msvc-productos, usando valores por defecto", itemDetails.getIdProducto());
+                    itemEntity.setNombreProducto("Producto " + itemDetails.getIdProducto());
+                    itemEntity.setPrecioUnitario(10000.0);
+                }
+            } catch (Exception e) {
+                log.error("Error al obtener información del producto {} desde msvc-productos: {}", 
+                    itemDetails.getIdProducto(), e.getMessage(), e);
+                // Usar valores por defecto si falla la llamada
+                itemEntity.setNombreProducto("Producto " + itemDetails.getIdProducto());
+                itemEntity.setPrecioUnitario(10000.0);
+            }
+            
             itemEntity.setSubtotal(itemEntity.getPrecioUnitario() * itemEntity.getCantidad());
             itemEntity.setTotalItem(itemEntity.getSubtotal());
             

@@ -7,7 +7,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface ItemCarritoRepository extends JpaRepository<ItemCarrito, Long> {
@@ -15,8 +14,8 @@ public interface ItemCarritoRepository extends JpaRepository<ItemCarrito, Long> 
     @Query("SELECT i FROM ItemCarrito i WHERE i.activo = true AND i.carrito.idCarrito = :idCarrito ORDER BY i.fechaAgregado ASC")
     List<ItemCarrito> findItemsPorCarrito(@Param("idCarrito") Long idCarrito);
     
-    @Query("SELECT i FROM ItemCarrito i WHERE i.activo = true AND i.carrito.idCarrito = :idCarrito AND i.idProducto = :idProducto")
-    Optional<ItemCarrito> findItemPorCarritoYProducto(@Param("idCarrito") Long idCarrito, @Param("idProducto") Long idProducto);
+    @Query("SELECT i FROM ItemCarrito i WHERE i.activo = true AND i.carrito.idCarrito = :idCarrito AND i.idProducto = :idProducto ORDER BY i.fechaAgregado DESC")
+    List<ItemCarrito> findItemsPorCarritoYProducto(@Param("idCarrito") Long idCarrito, @Param("idProducto") Long idProducto);
     
     @Query("SELECT i FROM ItemCarrito i WHERE i.activo = true AND i.estadoItem = :estado ORDER BY i.fechaAgregado DESC")
     List<ItemCarrito> findItemsPorEstado(@Param("estado") String estado);

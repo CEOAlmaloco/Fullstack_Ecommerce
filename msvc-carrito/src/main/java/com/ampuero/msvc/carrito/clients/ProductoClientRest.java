@@ -10,12 +10,12 @@ import java.util.Map;
 @FeignClient(name = "msvc-productos", url = "${MSVC_PRODUCTOS_URL:http://localhost:8003}")
 public interface ProductoClientRest {
 
-    @GetMapping("/productos/{id}")
+    @GetMapping("/api/v1/productos/{id}")
     ResponseEntity<Map<String, Object>> obtenerProducto(@PathVariable Long id);
 
-    @GetMapping("/productos/{id}/precio")
+    @GetMapping("/api/v1/productos/{id}/precio")
     ResponseEntity<Map<String, Object>> obtenerPrecioProducto(@PathVariable Long id);
 
-    @GetMapping("/productos/{id}/disponible")
+    @GetMapping("/api/v1/productos/{id}/disponible")
     ResponseEntity<Map<String, Object>> verificarDisponibilidad(@PathVariable Long id);
 }
